@@ -57,7 +57,7 @@ roomly/
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/gmed2b/m1dwm-roomly.git
+git clone https://github.com/gmed2b/M1DWM-roomly.git roomly
 cd roomly
 
 # Démarrer les services (frontend + backend)
