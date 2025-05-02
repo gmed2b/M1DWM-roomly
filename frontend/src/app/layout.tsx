@@ -1,20 +1,11 @@
+import { Footer } from "@/components/Footer";
+import Header from "@/components/Header";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Roomly - Système de réservation de salles de réunion",
-  description: "Réservez vos salles de réunion facilement et rapidement",
+  title: "Roomly - Find Your Perfect Meeting Space",
+  description: "Discover and book professional meeting rooms, conference halls, and unique event spaces",
 };
 
 export default function RootLayout({
@@ -23,8 +14,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+    <html lang="en">
+      <body className="min-h-screen flex flex-col bg-neutral-50">
+        <Header />
+        <main>{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
