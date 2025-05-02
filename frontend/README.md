@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🖥️ Frontend — Roomly
 
-## Getting Started
+Ce dossier contient l'interface utilisateur de **Roomly**, l'application de réservation de salles professionnelles.
 
-First, run the development server:
+---
+
+## 🧱 Stack utilisée
+
+- **[Next.js](https://nextjs.org/)** — Framework React fullstack
+- **[Shadcn/UI](https://ui.shadcn.dev/)** — UI components basés sur TailwindCSS & Radix
+- **[TailwindCSS](https://tailwindcss.com/)** — Framework CSS utilitaire
+- **TypeScript** — Typage statique pour un code plus sûr
+
+---
+
+## 🚀 Démarrage local
 
 ```bash
+# Aller dans le dossier frontend
+cd frontend
+
+# Installer les dépendances
+npm install
+
+# Lancer le serveur de dev
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# L'application sera accessible à l'adresse :
+# http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔧 Scripts disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Commande         | Description                            |
+| ---------------- | -------------------------------------- |
+| `npm run dev`    | Lance l'environnement de développement |
+| `npm run build`  | Compile l'app pour la production       |
+| `npm run lint`   | Analyse du code avec ESLint            |
+| `npm run format` | Formatte le code avec Prettier         |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Configuration Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Si vous utilisez [Vercel](https://vercel.com/) :
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Root Directory** : `frontend/`
+- **Build Command** : `npm run build`
+- **Output Directory** : `.next`
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Structure (principale)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+frontend/
+├── app/                # Routing + pages (App Router)
+├── components/         # Composants réutilisables
+├── lib/                # Fonctions utilitaires
+├── styles/             # Fichiers CSS (si besoin)
+├── public/             # Fichiers statiques
+├── tailwind.config.ts  # Configuration Tailwind
+├── tsconfig.json       # Configuration TypeScript
+└── ...
+```
+
+---
+
+## ✨ À venir
+
+- Système d'authentification
+- Pages de recherche, fiche salle, réservation
+- Intégration backend (API FastAPI)
+
+---
+
+## 👨‍💻 Auteur
+
+Projet développé dans le cadre du **Master Informatique**
