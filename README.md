@@ -1,7 +1,5 @@
 # 🏢 Roomly — Plateforme de Réservation de Salles
 
-##TEST
-
 **Roomly** est une application web de réservation de salles pour des événements professionnels. Le projet a été conçu dans le cadre d’un **Master Informatique** et vise à appliquer les principes du **DevOps**, du **développement agile (Scrum)**, et de la **gestion complète du cycle de vie logiciel** (de l'expression du besoin jusqu’au déploiement continu).
 
 ---
