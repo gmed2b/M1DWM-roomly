@@ -9,7 +9,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 
 export default function Header() {
   const pathname = usePathname();
-  console.log("Current Pathname:", pathname);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -43,7 +42,7 @@ export default function Header() {
               <LucideSearch className="h-4 w-4 mr-1" />
               Explore
             </Link>
-            <Link
+            {/* <Link
               href="/bookings"
               className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
                 pathname === "/bookings" ? "text-primary" : ""
@@ -60,17 +59,21 @@ export default function Header() {
             >
               <LucideBuilding className="h-4 w-4 mr-1" />
               List Your Space
-            </Link>
+            </Link> */}
           </nav>
 
           {/* User Actions */}
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" className="hidden md:flex">
-              Sign Up
-            </Button>
-            <Button size="sm" className="hidden md:flex">
-              Log In
-            </Button>
+            <Link href="/register">
+              <Button variant="outline" size="sm" className="hidden md:flex">
+                Sign Up
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button size="sm" className="hidden md:flex">
+                Log In
+              </Button>
+            </Link>
 
             {/* Mobile Menu Trigger */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -125,12 +128,16 @@ export default function Header() {
                   </nav>
 
                   <div className="mt-auto border-t p-6 flex flex-col gap-3">
-                    <Button variant="outline" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                      Sign Up
-                    </Button>
-                    <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                      Log In
-                    </Button>
+                    <Link href="/register">
+                      <Button variant="outline" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                        Sign Up
+                      </Button>
+                    </Link>
+                    <Link href="/login">
+                      <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                        Log In
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </SheetContent>
