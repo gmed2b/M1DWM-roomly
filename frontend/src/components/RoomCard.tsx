@@ -1,61 +1,84 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { LucideMapPin } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Room } from "@/types/room";
+import { LucideRulerDimensionLine, LucideSlidersHorizontal, LucideUsersRound } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 
-export interface RoomCardProps {
-  id: string;
-  name: string;
-  location: string;
-  price: number;
-  category: string;
-  capacity: number;
-  images: string[];
-  rating: number;
-  tags?: string[];
+interface RoomCardProps {
+  room: Room;
 }
 
-const RoomCard = ({ name, location, price, images, rating, tags }: RoomCardProps) => {
+export function RoomCard({ room }: RoomCardProps) {
+  // Trouve l'image principale (featured)
+  const featuredImage = room.images.find((img) => img.featured) || room.images[0];
+
   return (
-    <Card className="overflow-hidden pt-0">
-      <div className="relative h-48">
-        <Image src={images[0] || "/placeholder-room.jpg"} alt={name} fill className="object-fill" />
-        {tags && tags.includes("New") && <Badge className="absolute top-2 left-2 bg-green-500">New</Badge>}
+    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg pt-0">
+      <div className="relative h-52 w-full">
+        <Image
+          src={featuredImage.src.replace("/public", "")}
+          alt={featuredImage.alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+        <Badge
+          className="absolute right-2 top-2"
+          variant={
+            room.category === "Premium" ? "default" : room.category === "Haut de Gamme" ? "destructive" : "secondary"
+          }
+        >
+          {room.category}
+        </Badge>
       </div>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">{name}</CardTitle>
-            <CardDescription className="flex items-center mt-1">
-              <LucideMapPin className="h-3 w-3 mr-1" /> {location}
-            </CardDescription>
-          </div>
-          <div className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-sm font-medium">{rating}</div>
-        </div>
-      </CardHeader>
       <CardContent>
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {tags
-              .filter((tag) => tag !== "New")
-              .map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-xl font-semibold line-clamp-1">{room.name}</h3>
+          {room.rating && (
+            <div className="flex items-center gap-1 text-sm">
+              <span className="text-yellow-500">★</span>
+              <span>{room.rating}</span>
+              <span className="text-gray-500">({room.reviews})</span>
+            </div>
+          )}
+        </div>
+        <p className="mb-2 text-sm text-gray-600">{room.shortDescription}</p>
+        <div className="mb-2 flex flex-wrap gap-2">
+          <Badge variant="outline" className="flex items-center gap-1">
+            <LucideUsersRound className="h-4 w-4" />
+            Jusqu&apos;à {room.capacity.max} pers.
+          </Badge>
+          <Badge variant="outline" className="flex items-center gap-1">
+            <LucideRulerDimensionLine className="h-4 w-4" />
+            {room.size} m²
+          </Badge>
+          <Badge variant="outline" className="flex items-center gap-1">
+            <LucideSlidersHorizontal className="h-4 w-4" />
+            {room.type}
+          </Badge>
+        </div>
+        <div className="flex items-baseline justify-between">
+          <div>
+            <span className="text-lg font-bold">{room.pricePerHour}€</span>
+            <span className="text-sm text-gray-500">/heure</span>
           </div>
-        )}
+          <div>
+            <span className="text-lg font-bold">{room.pricePerDay}€</span>
+            <span className="text-sm text-gray-500">/jour</span>
+          </div>
+        </div>
       </CardContent>
-      <CardFooter className="flex justify-between items-center">
-        <p className="font-semibold text-lg">
-          €{price}
-          <span className="text-sm font-normal text-gray-500">/day</span>
-        </p>
-        <Button size="sm">Book Now</Button>
+      <CardFooter className="flex justify-between mt-auto">
+        <Button asChild variant="outline">
+          <Link href={`/rooms/${room.slug}`}>Détails</Link>
+        </Button>
+        <Button asChild>
+          <Link href={`/rooms/${room.slug}?reserve=true`}>Réserver</Link>
+        </Button>
       </CardFooter>
     </Card>
   );
-};
-
-export default RoomCard;
+}
