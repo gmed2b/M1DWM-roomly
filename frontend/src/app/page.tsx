@@ -1,11 +1,11 @@
 "use client";
 
 import CategoryCard from "@/components/CategoryCard";
-import RoomCard from "@/components/RoomCard";
+import { RoomCard } from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { popularRooms } from "@/data/rooms";
+import { newRooms, popularRooms } from "@/data/rooms";
 import { LucideArrowRight, LucideSearch } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -81,7 +81,7 @@ export default function HomePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {popularRooms.map((room) => (
-                  <RoomCard key={room.id} {...room} />
+                  <RoomCard key={room.id} room={room} />
                 ))}
               </div>
             </section>
@@ -108,39 +108,9 @@ export default function HomePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* This would be populated with actual data */}
-                <RoomCard
-                  id="4"
-                  name="Workspace Loft"
-                  location="Bordeaux, France"
-                  price={180}
-                  category="premium"
-                  capacity={25}
-                  images={["/assets/workspace.jpg"]}
-                  rating={4.9}
-                  tags={["New", "Catering"]}
-                />
-                <RoomCard
-                  id="5"
-                  name="Central Conference"
-                  location="Lille, France"
-                  price={210}
-                  category="high-end"
-                  capacity={40}
-                  images={["/assets/conference.jpg"]}
-                  rating={4.7}
-                  tags={["New", "Audio System"]}
-                />
-                <RoomCard
-                  id="6"
-                  name="Urban Meeting Space"
-                  location="Toulouse, France"
-                  price={125}
-                  category="standard"
-                  capacity={15}
-                  images={["/assets/meeting-space.jpg"]}
-                  rating={4.6}
-                  tags={["New", "Video Conference"]}
-                />
+                {newRooms.map((room) => (
+                  <RoomCard key={room.id} room={room} />
+                ))}
               </div>
             </section>
           </TabsContent>

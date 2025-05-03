@@ -2,11 +2,15 @@
 
 import { LucideBuilding, LucideCalendar, LucideHome, LucideMenu, LucideSearch } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 export default function Header() {
+  const pathname = usePathname();
+  console.log("Current Pathname:", pathname);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -21,19 +25,39 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+            <Link
+              href="/"
+              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
+                pathname === "/" ? "text-primary" : ""
+              }`}
+            >
               <LucideHome className="h-4 w-4 mr-1" />
               Home
             </Link>
-            <Link href="/search" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+            <Link
+              href="/search"
+              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
+                pathname === "/search" ? "text-primary" : ""
+              }`}
+            >
               <LucideSearch className="h-4 w-4 mr-1" />
               Explore
             </Link>
-            <Link href="/bookings" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+            <Link
+              href="/bookings"
+              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
+                pathname === "/bookings" ? "text-primary" : ""
+              }`}
+            >
               <LucideCalendar className="h-4 w-4 mr-1" />
               Bookings
             </Link>
-            <Link href="/host" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+            <Link
+              href="/host"
+              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
+                pathname === "/host" ? "text-primary" : ""
+              }`}
+            >
               <LucideBuilding className="h-4 w-4 mr-1" />
               List Your Space
             </Link>
