@@ -19,7 +19,7 @@
 | Côté            | Technologies principales               |
 | --------------- | -------------------------------------- |
 | Frontend        | Next.js, Shadcn                        |
-| Backend         | FastAPI                                |
+| Backend         | Flask                                |
 | Base de données | Supabase, PostgreSQL                   |
 | CI/CD           | GitHub Actions, Docker, Docker Compose |
 | Infra           | NGINX, Docker Compose                  |
@@ -32,7 +32,7 @@
 
 roomly/
 ├── frontend/         # Interface utilisateur (Next.js)
-├── backend/          # API FastAPI
+├── backend/          # API Flask
 ├── infra/            # Docker, NGINX, configuration d’infrastructure
 ├── docs/             # Documentation technique et agile
 ├── .github/          # Workflows GitHub Actions (CI/CD)
@@ -65,7 +65,7 @@ docker-compose up --build
 ```
 
 - Frontend : [http://localhost:3000](http://localhost:3000)
-- Backend : [http://localhost:8000/docs](http://localhost:8000/docs) (FastAPI Swagger)
+- Backend : [http://localhost:5000/docs](http://localhost:5000/docs) (Flask Swagger)
 
 ---
 
