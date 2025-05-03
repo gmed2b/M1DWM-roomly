@@ -282,6 +282,8 @@ export const newRooms: Room[] = [
   },
 ];
 
+export const allRooms: Room[] = [...popularRooms, ...newRooms];
+
 export const getRoomBySlug = (slug: string): Room | undefined => {
-  return popularRooms.find((room) => room.slug === slug);
+  return allRooms.find((room) => room.slug === slug);
 };
