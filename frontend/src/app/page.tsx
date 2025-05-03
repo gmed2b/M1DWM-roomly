@@ -1,107 +1,25 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import CategoryCard from "@/components/CategoryCard";
+import RoomCard from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LucideArrowRight, LucideCalendar, LucideFilter, LucideMapPin, LucideSearch } from "lucide-react";
+import { popularRooms } from "@/data/rooms";
+import { LucideArrowRight, LucideSearch } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-// Types
-type RoomType = "small" | "medium" | "large" | "atypical" | "all";
-type RoomCategory = "standard" | "premium" | "high-end" | "all";
+export default function HomePage() {
+  const router = useRouter();
 
-interface FilterState {
-  type: RoomType;
-  category: RoomCategory;
-  capacity: number;
-  priceRange: [number, number];
-  equipment: string[];
-}
-
-interface RoomCardProps {
-  id: string;
-  name: string;
-  location: string;
-  price: number;
-  category: string;
-  capacity: number;
-  images: string[];
-  rating: number;
-  tags?: string[];
-}
-
-// Sample data
-const popularRooms: RoomCardProps[] = [
-  {
-    id: "1",
-    name: "Sheraton Villa",
-    location: "Paris, France",
-    price: 240,
-    category: "premium",
-    capacity: 30,
-    images: ["/assets/room1.webp", "https://picsum.photos/700/600"],
-    rating: 4.8,
-    tags: ["Audiovisual", "Catering"],
-  },
-  {
-    id: "2",
-    name: "Residence Inn",
-    location: "Lyon, France",
-    price: 150,
-    category: "standard",
-    capacity: 20,
-    images: ["/assets/room2.jpeg", "https://picsum.photos/600/500"],
-    rating: 4.5,
-    tags: ["Whiteboard", "Coffee Service"],
-  },
-  {
-    id: "3",
-    name: "Holiday Inn",
-    location: "Marseille, France",
-    price: 130,
-    category: "standard",
-    capacity: 15,
-    images: ["/assets/room3.webp", "https://picsum.photos/500/400"],
-    rating: 4.1,
-    tags: ["Projector", "Private Parking"],
-  },
-];
-
-const equipmentOptions = [
-  { id: "projector", label: "Projector" },
-  { id: "audio", label: "Audio System" },
-  { id: "whiteboard", label: "Whiteboard" },
-  { id: "videoConference", label: "Video Conference" },
-  { id: "catering", label: "Catering" },
-  { id: "wifi", label: "WiFi" },
-];
-
-const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<FilterState>({
-    type: "all",
-    category: "all",
-    capacity: 10,
-    priceRange: [0, 500],
-    equipment: [],
-  });
 
-  const toggleEquipment = (id: string) => {
-    setFilters((prev) => {
-      if (prev.equipment.includes(id)) {
-        return { ...prev, equipment: prev.equipment.filter((item) => item !== id) };
-      } else {
-        return { ...prev, equipment: [...prev.equipment, id] };
-      }
-    });
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
+    }
   };
 
   return (
@@ -116,148 +34,28 @@ const HomePage = () => {
             Discover and book professional meeting rooms, conference halls, and unique event spaces
           </p>
 
-          {/* Search Bar */}
-          <div className="bg-white rounded-lg shadow-lg p-4 flex flex-col md:flex-row gap-4">
+          {/* Simplified Search Bar */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }}
+            className="bg-white rounded-lg shadow-lg p-4 flex flex-col md:flex-row gap-4"
+          >
             <div className="flex-1 flex items-center gap-2">
               <LucideSearch className="h-5 w-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Location or venue name"
+                placeholder="Search location or venue"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
-
-            <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
-              <LucideCalendar className="h-5 w-5 text-gray-400" />
-              <Select>
-                <SelectTrigger className="border-0 w-36">
-                  <SelectValue placeholder="Select date" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="tomorrow">Tomorrow</SelectItem>
-                  <SelectItem value="next-week">Next week</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <LucideFilter className="h-4 w-4" />
-                  Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>Filter Rooms</SheetTitle>
-                  <SheetDescription>Customize your search with these filters</SheetDescription>
-                </SheetHeader>
-
-                <div className="py-6 space-y-6">
-                  {/* Room Type */}
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium">Room Type</h3>
-                    <Select
-                      value={filters.type}
-                      onValueChange={(value) => setFilters({ ...filters, type: value as RoomType })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="small">Small Rooms</SelectItem>
-                        <SelectItem value="medium">Medium Rooms</SelectItem>
-                        <SelectItem value="large">Large Conference Halls</SelectItem>
-                        <SelectItem value="atypical">Atypical Spaces</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Room Category */}
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium">Category</h3>
-                    <Select
-                      value={filters.category}
-                      onValueChange={(value) => setFilters({ ...filters, category: value as RoomCategory })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="standard">Standard</SelectItem>
-                        <SelectItem value="premium">Premium</SelectItem>
-                        <SelectItem value="high-end">High-End</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Capacity */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <h3 className="text-sm font-medium">Capacity</h3>
-                      <span className="text-sm text-gray-500">{filters.capacity}+ people</span>
-                    </div>
-                    <Slider
-                      defaultValue={[filters.capacity]}
-                      max={100}
-                      step={5}
-                      onValueChange={(value) => setFilters({ ...filters, capacity: value[0] })}
-                      className="py-4"
-                    />
-                  </div>
-
-                  {/* Price Range */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <h3 className="text-sm font-medium">Price Range</h3>
-                      <span className="text-sm text-gray-500">
-                        €{filters.priceRange[0]} - €{filters.priceRange[1]}
-                      </span>
-                    </div>
-                    <Slider
-                      defaultValue={filters.priceRange}
-                      min={0}
-                      max={1000}
-                      step={50}
-                      onValueChange={(value) => setFilters({ ...filters, priceRange: [value[0], value[1]] })}
-                      className="py-4"
-                    />
-                  </div>
-
-                  {/* Equipment */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium">Equipment</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {equipmentOptions.map((option) => (
-                        <div key={option.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={option.id}
-                            checked={filters.equipment.includes(option.id)}
-                            onCheckedChange={() => toggleEquipment(option.id)}
-                          />
-                          <label
-                            htmlFor={option.id}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {option.label}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Button className="w-full mt-4">Apply Filters</Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            <Button className="bg-primary">Search</Button>
-          </div>
+            <Button type="submit" className="bg-primary">
+              Search
+            </Button>
+          </form>
         </div>
       </div>
 
@@ -369,70 +167,4 @@ const HomePage = () => {
       </div>
     </div>
   );
-};
-
-// Component for room cards
-const RoomCard = ({ name, location, price, images, rating, tags }: RoomCardProps) => {
-  return (
-    <Card className="overflow-hidden pt-0">
-      <div className="relative h-48">
-        <Image src={images[0] || "/placeholder-room.jpg"} alt={name} fill className="object-fill" />
-        {tags && tags.includes("New") && <Badge className="absolute top-2 left-2 bg-green-500">New</Badge>}
-      </div>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg">{name}</CardTitle>
-            <CardDescription className="flex items-center mt-1">
-              <LucideMapPin className="h-3 w-3 mr-1" /> {location}
-            </CardDescription>
-          </div>
-          <div className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-sm font-medium">{rating}</div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {tags
-              .filter((tag) => tag !== "New")
-              .map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="flex justify-between items-center">
-        <p className="font-semibold text-lg">
-          €{price}
-          <span className="text-sm font-normal text-gray-500">/day</span>
-        </p>
-        <Button size="sm">Book Now</Button>
-      </CardFooter>
-    </Card>
-  );
-};
-
-// Component for category cards
-const CategoryCard = ({ title, imageSrc, count }: { title: string; imageSrc: string; count: number }) => {
-  return (
-    <Link href={`/category/${title.toLowerCase().replace(/\s+/g, "-")}`}>
-      <div className="relative h-36 rounded-lg overflow-hidden group">
-        <Image
-          src={imageSrc || "/placeholder-category.jpg"}
-          alt={title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 p-3 text-white">
-          <h3 className="font-medium">{title}</h3>
-          <p className="text-sm opacity-80">{count} spaces</p>
-        </div>
-      </div>
-    </Link>
-  );
-};
-
-export default HomePage;
+}
