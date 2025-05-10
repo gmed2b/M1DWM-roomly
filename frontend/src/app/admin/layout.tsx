@@ -112,7 +112,7 @@ export default function AdminLayout({
                   <LucideMenu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left">
+              <SheetContent side="right">
                 <SheetHeader className="border-b">
                   <SheetTitle>
                     <div className="flex items-center gap-2">
