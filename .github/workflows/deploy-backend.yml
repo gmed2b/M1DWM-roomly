@@ -1,0 +1,122 @@
+name: Deploy Backend to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+      - feat-develop
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_NAME: roomly-backend
+  REGION: europe-west1
+  REPOSITORY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/flask-app
+
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest
+
+    - name: Run tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v
+
+  deploy:
+    name: Deploy
+    needs: test  # This ensures deploy only runs if tests pass
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Configure Docker
+      run: |
+        gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin europe-west1-docker.pkg.dev
+
+    - name: Build and Push Container
+      run: |
+        cd backend
+        IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app:${{ github.sha }}"
+        docker build -t $IMAGE_NAME .
+        docker push $IMAGE_NAME
+
+    - name: Deploy to Cloud Run
+      uses: google-github-actions/deploy-cloudrun@v1
+      with:
+        service: ${{ env.SERVICE_NAME }}
+        image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app:${{ github.sha }}
+        region: ${{ env.REGION }}
+        flags: '--platform managed --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+        env_vars: |
+          FLASK_ENV=production
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Cloud SQL Proxy
+      run: |
+        wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O /usr/local/bin/cloud_sql_proxy
+        chmod +x /usr/local/bin/cloud_sql_proxy
+
+    - name: Run Database Migrations
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        # Start Cloud SQL Proxy in the background
+        cloud_sql_proxy -instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}=tcp:5432 &
+        # Wait for the proxy to start
+        sleep 5
+        # Run migrations using TCP connection
+        export DATABASE_URL="postgresql+psycopg2://flask_app_user:flask_app_password@localhost:5432/flask_app"
+        # Get the latest migration version
+        LATEST_REV=$(alembic heads | grep -o '[a-f0-9]\{12\}' | head -n 1)
+        # Get current migration version
+        CURRENT_REV=$(alembic current 2>/dev/null | grep -o '[a-f0-9]\{12\}' || echo "none")
+        if [ "$CURRENT_REV" = "none" ]; then
+          echo "No migrations applied yet, running initial migration"
+          alembic stamp head
+          alembic upgrade head
+        elif [ "$CURRENT_REV" != "$LATEST_REV" ]; then
+          echo "Current migration ($CURRENT_REV) is not the latest ($LATEST_REV), upgrading"
+          alembic upgrade head
+        else
+          echo "Database is up to date at revision $CURRENT_REV"
+        fi 
