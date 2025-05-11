@@ -126,7 +126,7 @@ jobs:
         pip install -r requirements.txt
         
         # Start Cloud SQL Auth proxy in the background
-        ./cloud-sql-proxy ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} &
+        /usr/local/bin/cloud_sql_proxy ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} &
         
         # Wait for the proxy to be ready
         for i in {1..30}; do
