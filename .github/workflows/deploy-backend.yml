@@ -119,25 +119,29 @@ jobs:
     - name: Run Database Migrations
       run: |
         cd backend
+        # Install dependencies
+        python -m venv venv
+        source venv/bin/activate
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        # Start Cloud SQL Proxy in the background
-        cloud_sql_proxy -instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }}=tcp:5432 &
-        # Wait for the proxy to start
-        sleep 5
-        # Run migrations using TCP connection
-        export DATABASE_URL="postgresql+psycopg2://flask_app_user:flask_app_password@localhost:5432/flask_app"
-        # Get the latest migration version
-        LATEST_REV=$(alembic heads | grep -o '[a-f0-9]\{12\}' | head -n 1)
-        # Get current migration version
-        CURRENT_REV=$(alembic current 2>/dev/null | grep -o '[a-f0-9]\{12\}' || echo "none")
-        if [ "$CURRENT_REV" = "none" ]; then
-          echo "No migrations applied yet, running initial migration"
-          alembic stamp head
-          alembic upgrade head
-        elif [ "$CURRENT_REV" != "$LATEST_REV" ]; then
-          echo "Current migration ($CURRENT_REV) is not the latest ($LATEST_REV), upgrading"
-          alembic upgrade head
-        else
-          echo "Database is up to date at revision $CURRENT_REV"
-        fi 
+        
+        # Start Cloud SQL Auth proxy in the background
+        ./cloud-sql-proxy ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} &
+        
+        # Wait for the proxy to be ready
+        for i in {1..30}; do
+          if nc -z localhost 5432; then
+            echo "Cloud SQL Auth proxy is ready"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "Cloud SQL Auth proxy failed to start"
+            exit 1
+          fi
+          echo "Waiting for Cloud SQL Auth proxy to start... ($i/30)"
+          sleep 1
+        done
+        
+        # Run migrations using localhost connection
+        export DATABASE_URL=${{ secrets.DATABASE_URL }}
+        alembic upgrade head
