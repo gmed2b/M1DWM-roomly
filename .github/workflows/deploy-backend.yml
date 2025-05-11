@@ -12,36 +12,9 @@ env:
   REGION: europe-west1
   REPOSITORY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/flask-app
 
-
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
-    - name: Install dependencies
-      run: |
-        cd backend
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
-
-    - name: Run tests
-      run: |
-        cd backend
-        python -m pytest tests/ -v
-
-  deploy:
-    name: Deploy
-    needs: test  # This ensures deploy only runs if tests pass
+  build:
+    name: Build
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -72,6 +45,54 @@ jobs:
         IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app:${{ github.sha }}"
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v
+
+  deploy:
+    name: Deploy
+    needs: [build, test]  # This ensures deploy only runs if both build and tests pass
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
 
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v1
