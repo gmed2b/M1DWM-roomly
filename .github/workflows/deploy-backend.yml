@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat-develop
+      - test-pipeline
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
