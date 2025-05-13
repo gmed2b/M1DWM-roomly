@@ -1,20 +1,13 @@
-from flask import Blueprint, jsonify, request, abort
 from app.models.booking import Booking
 from app.models.room import Room
-from app.schemas.booking import BookingCreate, BookingResponse
+from app.schemas.booking import BookingCreate
 from app import db
-from pydantic import ValidationError
-from datetime import datetime
 
-bookings_bp = Blueprint('bookings', __name__)
 
-@bookings_bp.route('/', methods=['POST'])
-def create_booking():
-    """Créer une nouvelle réservation."""
-    try:
-        data = request.json
-        booking_data = BookingCreate(**data)
-        
+class BookingService:
+    @staticmethod
+    def create_booking(booking_data: BookingCreate):
+        """Crée une nouvelle réservation."""
         # Vérifier que la salle existe
         room = Room.query.get_or_404(booking_data.room_id)
         
@@ -38,23 +31,27 @@ def create_booking():
         db.session.add(booking)
         db.session.commit()
         
-        return jsonify({
+        return {
             'id': booking.id,
             'status': booking.status,
             'message': 'Votre réservation a été enregistrée avec succès'
-        }), 201
+        }, 201
     
-    except ValidationError as e:
-        return jsonify({"error": "Données invalides", "details": str(e)}), 400
+    @staticmethod
+    def get_user_bookings(user_id):
+        """Récupère toutes les réservations d'un utilisateur."""
+        bookings = Booking.query.filter_by(user_id=user_id).all()
+        result = []
+        
+        for booking in bookings:
+            result.append(BookingService._format_booking_data(booking))
+        
+        return result
     
-@bookings_bp.route('/user/<user_id>', methods=['GET'])
-def get_user_bookings(user_id):
-    """Récupérer toutes les réservations d'un utilisateur."""
-    bookings = Booking.query.filter_by(user_id=user_id).all()
-    result = []
-    
-    for booking in bookings:
-        booking_data = {
+    @staticmethod
+    def _format_booking_data(booking):
+        """Formate les données d'une réservation pour le frontend."""
+        return {
             "id": booking.id,
             "room_id": booking.room_id,
             "date": booking.date.isoformat(),
@@ -68,6 +65,3 @@ def get_user_bookings(user_id):
             "created_at": booking.created_at.isoformat(),
             "updated_at": booking.updated_at.isoformat()
         }
-        result.append(booking_data)
-    
-    return jsonify(result)

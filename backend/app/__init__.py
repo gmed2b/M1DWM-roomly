@@ -25,9 +25,9 @@ def create_app():
     db.init_app(app)
     
     # Enregistrer les blueprints
-    from app.api.rooms import rooms_bp
-    from app.api.bookings import bookings_bp
-    from app.api.auth import auth_bp
+    from app.routes.rooms import rooms_bp
+    from app.routes.bookings import bookings_bp
+    from app.routes.auth import auth_bp
     
     app.register_blueprint(rooms_bp, url_prefix='/api/rooms')
     app.register_blueprint(bookings_bp, url_prefix='/api/bookings')
