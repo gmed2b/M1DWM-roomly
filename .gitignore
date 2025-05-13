@@ -1,3 +1,10 @@
 **/.DS_Store
-**/.env.*
+**/.env
+
 **/.conda
+**/__pycache__/*
+
+backend/.pytest_cache
+
+**/key.json
+
