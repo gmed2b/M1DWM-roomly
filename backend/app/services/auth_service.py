@@ -1,24 +1,18 @@
-from flask import Blueprint, request, jsonify
 from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin, UserResponse
+from app.schemas.user import UserCreate, UserLogin
 from app import db
 import jwt
 import datetime
 import os
-from pydantic import ValidationError
 
-auth_bp = Blueprint('auth', __name__)
 
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    """Enregistrer un nouvel utilisateur."""
-    try:
-        data = request.json
-        user_data = UserCreate(**data)
-        
+class AuthService:
+    @staticmethod
+    def register_user(user_data):
+        """Enregistre un nouvel utilisateur dans la base de données."""
         # Vérifier si l'email existe déjà
         if User.query.filter_by(email=user_data.email).first():
-            return jsonify({'error': 'Cet email est déjà utilisé'}), 400
+            return {'error': 'Cet email est déjà utilisé'}, 400
         
         # Créer un nouvel utilisateur
         user = User(
@@ -31,24 +25,17 @@ def register():
         db.session.add(user)
         db.session.commit()
         
-        return jsonify({'message': 'Compte créé avec succès'}), 201
+        return {'message': 'Compte créé avec succès'}, 201
     
-    except ValidationError as e:
-        return jsonify({"error": "Données invalides", "details": str(e)}), 400
-
-@auth_bp.route('/login', methods=['POST'])
-def login():
-    """Connecter un utilisateur et générer un token."""
-    try:
-        data = request.json
-        user_data = UserLogin(**data)
-        
+    @staticmethod
+    def login_user(user_data):
+        """Authentifie un utilisateur et génère un token JWT."""
         # Trouver l'utilisateur par email
         user = User.query.filter_by(email=user_data.email).first()
         
         # Vérifier que l'utilisateur existe et que le mot de passe est correct
         if not user or not user.check_password(user_data.password):
-            return jsonify({'error': 'Email ou mot de passe incorrect'}), 401
+            return {'error': 'Email ou mot de passe incorrect'}, 401
         
         # Générer un token JWT
         token = jwt.encode({
@@ -56,7 +43,11 @@ def login():
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }, os.getenv('SECRET_KEY', 'dev_key'), algorithm='HS256')
         
-        return jsonify({
+        # Si le token est un objet bytes (dépend de la version de PyJWT), le convertir en string
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
+            
+        return {
             'token': token,
             'user': {
                 'id': user.id,
@@ -64,7 +55,4 @@ def login():
                 'first_name': user.first_name,
                 'last_name': user.last_name
             }
-        })
-    
-    except ValidationError as e:
-        return jsonify({"error": "Données invalides", "details": str(e)}), 400
+        }, 200
