@@ -1,16 +1,16 @@
-name: Deploy Frontend to Cloud Run
+name: Deploy Frontend Dev to Cloud Run
 
 on:
   push:
     branches:
-      - main  # or your default branch
-      
+      - dev
+      - test-pipeline
     paths:
       - 'frontend/**'
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  SERVICE_NAME: roomly-frontend
+  SERVICE_NAME: roomly-frontend-dev
   REGION: europe-west1  # Change this to your preferred region
 
 jobs:
@@ -40,13 +40,13 @@ jobs:
     - name: Build and Push Container
       run: |
         cd frontend
-        docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} .
-        docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }}
+        docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:dev .
+        docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:dev
 
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v2
       with:
         service: ${{ env.SERVICE_NAME }}
         region: ${{ env.REGION }}
-        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:dev
         flags: '--platform managed --allow-unauthenticated' 
