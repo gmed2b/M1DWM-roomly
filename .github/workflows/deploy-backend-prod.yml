@@ -144,3 +144,4 @@ jobs:
           FLASK_ENV=production
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           DATABASE_URL=${{ secrets.DATABASE_URL }}
+          GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}

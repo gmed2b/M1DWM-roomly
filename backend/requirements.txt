@@ -17,3 +17,8 @@ python-dotenv==1.1.0
 SQLAlchemy==2.0.40
 typing_extensions==4.13.2
 Werkzeug==3.1.3
+prometheus-client==0.19.0
+opentelemetry-api==1.23.0
+opentelemetry-sdk==1.23.0
+opentelemetry-instrumentation-flask==0.44b0
+opentelemetry-exporter-google-cloud==1.23.0

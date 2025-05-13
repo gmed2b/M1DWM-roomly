@@ -1,7 +1,9 @@
 from flask import Flask, jsonify, request
 import os
+from monitoring import setup_monitoring
 
 app = Flask(__name__)
+setup_monitoring(app)
 
 @app.route('/api/hello', methods=['GET'])
 def hello():
