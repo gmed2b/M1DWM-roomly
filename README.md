@@ -19,7 +19,7 @@
 | Côté            | Technologies principales               |
 | --------------- | -------------------------------------- |
 | Frontend        | Next.js, Shadcn                        |
-| Backend         | Flask                                |
+| Backend         | Flask                                  |
 | Base de données | Supabase, PostgreSQL                   |
 | CI/CD           | GitHub Actions, Docker, Docker Compose |
 | Infra           | NGINX, Docker Compose                  |
@@ -31,11 +31,10 @@
 ```
 
 roomly/
-├── frontend/         # Interface utilisateur (Next.js)
-├── backend/          # API Flask
-├── infra/            # Docker, NGINX, configuration d’infrastructure
-├── docs/             # Documentation technique et agile
-├── .github/          # Workflows GitHub Actions (CI/CD)
+├── frontend/             # Site web (Next.js)
+├── backend/              # REST API (Flask)
+├── infra/                # Docker, NGINX, configuration d’infrastructure
+├── .github/              # Workflows GitHub Actions (CI/CD)
 ├── docker-compose.yml
 ├── README.md
 └── .env.example
@@ -77,7 +76,6 @@ docker-compose up --build
 - `develop` : intégration continue (merge des fonctionnalités validées)
 - `feature/` : développement d’une nouvelle fonctionnalité
 - `fix/` : correction de bug
-- `release/` : préparation d’une version livrable
 - `hotfix/` : correction urgente en production
 
 ### 🧑‍💻 Développer une nouvelle fonctionnalité (frontend ou backend)
@@ -126,12 +124,15 @@ Les pipelines automatisent :
 
 ## 👨‍🎓 Réalisé par
 
+- Mathieu Michelozzi — Développeur Backend - Chargé de projet
+
+- Dorian Lovichi — Développeur Frontend - Scrum Master
+
+- Achille Poirier — DevOps - Administrateur système
+
+- Mehdi Ghoulam — Développeur Fullstack - Lead developpeur
+
 > Projet réalisé dans le cadre du **Master Informatique - Parcours DevOps / Ingénierie Logicielle**
-> Année universitaire 2024–2025
-> \[Mathieu Michelozzi] — Développeur Backend - Chargé de projet
-> \[Dorian Lovichi] — Développeur Frontend - Scrum Master
-> \[Achille Poirier] — DevOps - Administrateur système
-> \[Mehdi Ghoulam] — Développeur Fullstack - Lead developpeur
 
 ---
 
