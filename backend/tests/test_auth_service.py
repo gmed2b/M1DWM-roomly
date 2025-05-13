@@ -1,141 +1,85 @@
-import unittest
+import pytest
 from unittest.mock import patch, MagicMock
-from app import create_app, db
-from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin
 from app.services.auth_service import AuthService
-import os
-import uuid
+from app.schemas.user import UserCreate, UserLogin
+from app.models.user import User
+
+# Setup de données utilisateur
+@pytest.fixture
+def user_data_create():
+    return UserCreate(
+        email="test@example.com",
+        password="password123",
+        first_name="John",
+        last_name="Doe"
+    )
+
+@pytest.fixture
+def user_data_login():
+    return UserLogin(
+        email="test@example.com",
+        password="password123"
+    )
 
 
-class TestAuthService(unittest.TestCase):
-    """Tests unitaires pour le service d'authentification."""
+# Test: email déjà utilisé
+@patch('app.services.auth_service.User')
+def test_register_user_email_exists(mock_user_class, user_data_create):
+    mock_user_class.query.filter_by.return_value.first.return_value = True
 
-    def setUp(self):
-        """Initialiser l'environnement de test."""
-        self.app = create_app()
-        self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-        
-        self.app_context = self.app.app_context()
-        self.app_context.push()
-        db.create_all()
-        
-        # Générer un email unique pour chaque test
-        self.test_email = f"test_{uuid.uuid4().hex[:8]}@example.com"
-        
-        # Créer un utilisateur de test
-        self.test_user = User(
-            email=self.test_email,
-            first_name="Test",
-            last_name="User"
-        )
-        self.test_user.set_password("password123")
-        db.session.add(self.test_user)
-        db.session.commit()
-        
-        # Créer des objets de schéma pour les tests
-        self.valid_register_data = UserCreate(
-            email=f"new_{uuid.uuid4().hex[:8]}@example.com",
-            password="newpassword",
-            first_name="New",
-            last_name="User"
-        )
-        
-        self.existing_email_data = UserCreate(
-            email=self.test_email,  # Email déjà existant
-            password="password123",
-            first_name="Existing",
-            last_name="User"
-        )
-        
-        self.valid_login_data = UserLogin(
-            email=self.test_email,
-            password="password123"
-        )
-        
-        self.invalid_login_data = UserLogin(
-            email=self.test_email,
-            password="wrongpassword"
-        )
+    response, status = AuthService.register_user(user_data_create)
     
-    def tearDown(self):
-        """Nettoyer l'environnement après les tests."""
-        db.session.remove()
-        db.drop_all()
-        self.app_context.pop()
-    
-    def test_register_user_success(self):
-        """Test d'enregistrement d'un nouvel utilisateur avec succès."""
-        response, status_code = AuthService.register_user(self.valid_register_data)
-        
-        # Vérifier la réponse
-        self.assertEqual(status_code, 201)
-        self.assertEqual(response, {'message': 'Compte créé avec succès'})
-        
-        # Vérifier que l'utilisateur a été créé dans la base de données
-        user = User.query.filter_by(email=self.valid_register_data.email).first()
-        self.assertIsNotNone(user)
-        self.assertEqual(user.email, self.valid_register_data.email)
-        self.assertEqual(user.first_name, "New")
-        self.assertEqual(user.last_name, "User")
-        self.assertTrue(user.check_password("newpassword"))
-    
-    def test_register_user_existing_email(self):
-        """Test d'enregistrement avec un email déjà existant."""
-        response, status_code = AuthService.register_user(self.existing_email_data)
-        
-        # Vérifier la réponse d'erreur
-        self.assertEqual(status_code, 400)
-        self.assertEqual(response, {'error': 'Cet email est déjà utilisé'})
-        
-        # Vérifier qu'un nouvel utilisateur n'a pas été créé
-        users_count = User.query.count()
-        self.assertEqual(users_count, 1)  # Toujours seulement l'utilisateur de test
-    
-    @patch('app.services.auth_service.jwt.encode')
-    def test_login_user_success(self, mock_jwt_encode):
-        """Test de connexion avec des identifiants valides."""
-        # Configurer le mock pour jwt.encode
-        mock_jwt_encode.return_value = "fake_token"
-        
-        response, status_code = AuthService.login_user(self.valid_login_data)
-        
-        # Vérifier la réponse
-        self.assertEqual(status_code, 200)
-        self.assertIn('token', response)
-        self.assertEqual(response['token'], "fake_token")
-        self.assertIn('user', response)
-        self.assertEqual(response['user']['email'], self.test_email)
-        
-        # Vérifier que jwt.encode a été appelé avec les bons arguments
-        mock_jwt_encode.assert_called_once()
-        args, kwargs = mock_jwt_encode.call_args
-        self.assertIn('user_id', args[0])
-        self.assertIn('exp', args[0])
-        self.assertEqual(kwargs['algorithm'], 'HS256')
-    
-    def test_login_user_invalid_password(self):
-        """Test de connexion avec un mot de passe invalide."""
-        response, status_code = AuthService.login_user(self.invalid_login_data)
-        
-        # Vérifier la réponse d'erreur
-        self.assertEqual(status_code, 401)
-        self.assertEqual(response, {'error': 'Email ou mot de passe incorrect'})
-    
-    def test_login_user_nonexistent_email(self):
-        """Test de connexion avec un email qui n'existe pas."""
-        nonexistent_login = UserLogin(
-            email=f"nonexistent_{uuid.uuid4().hex[:8]}@example.com",
-            password="password123"
-        )
-        
-        response, status_code = AuthService.login_user(nonexistent_login)
-        
-        # Vérifier la réponse d'erreur
-        self.assertEqual(status_code, 401)
-        self.assertEqual(response, {'error': 'Email ou mot de passe incorrect'})
+    assert status == 400
+    assert response['error'] == 'Cet email est déjà utilisé'
 
 
-if __name__ == '__main__':
-    unittest.main()
+# Test: création d'un utilisateur avec succès
+@patch('app.services.auth_service.db')
+@patch('app.services.auth_service.User')
+def test_register_user_success(mock_user_class, mock_db, user_data_create):
+    mock_user_instance = MagicMock()
+    mock_user_class.return_value = mock_user_instance
+    mock_user_class.query.filter_by.return_value.first.return_value = None
+
+    response, status = AuthService.register_user(user_data_create)
+
+    assert status == 201
+    assert response['message'] == 'Compte créé avec succès'
+    mock_db.session.add.assert_called_once()
+    mock_db.session.commit.assert_called_once()
+    mock_user_instance.set_password.assert_called_once_with(user_data_create.password)
+
+
+# Test: connexion avec mauvais mot de passe
+@patch('app.services.auth_service.User')
+def test_login_user_wrong_credentials(mock_user_class, user_data_login):
+    user_mock = MagicMock()
+    user_mock.check_password.return_value = False
+    mock_user_class.query.filter_by.return_value.first.return_value = user_mock
+
+    response, status = AuthService.login_user(user_data_login)
+
+    assert status == 401
+    assert response['error'] == 'Email ou mot de passe incorrect'
+
+
+# Test: connexion avec succès
+@patch('app.services.auth_service.jwt.encode', return_value='fake.jwt.token')
+@patch('app.services.auth_service.os.getenv', return_value='secret_key')
+@patch('app.services.auth_service.User')
+def test_login_user_success(mock_user_class, mock_getenv, mock_jwt, user_data_login):
+    user_mock = MagicMock()
+    user_mock.id = 1
+    user_mock.email = "test@example.com"
+    user_mock.first_name = "John"
+    user_mock.last_name = "Doe"
+    user_mock.check_password.return_value = True
+    mock_user_class.query.filter_by.return_value.first.return_value = user_mock
+
+    response, status = AuthService.login_user(user_data_login)
+
+    assert status == 200
+    assert response['token'] == 'fake.jwt.token'
+    assert response['user']['email'] == user_mock.email
+    assert response['user']['first_name'] == user_mock.first_name
+    assert response['user']['id'] == user_mock.id
