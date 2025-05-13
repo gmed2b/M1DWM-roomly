@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - main  # or your default branch
-      
-    paths:
-      - 'frontend/**'
+
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -14,8 +12,8 @@ env:
   REGION: europe-west1  # Change this to your preferred region
 
 jobs:
-  deploy:
-    name: Deploy
+  build:
+    name: Build
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -42,6 +40,24 @@ jobs:
         cd frontend
         docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} .
         docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }}
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
 
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v2
