@@ -29,4 +29,4 @@ COPY . .
 EXPOSE 8080
 
 # Command to run the application
-CMD ["gunicorn", "-b", "0.0.0.0:${PORT}", "app:app"] 
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"] 
