@@ -8,10 +8,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # URL de base de l'API
-BASE_URL="http://localhost:5000/api"
-
-# Générer un timestamp pour les identifiants uniques
-TIMESTAMP=$(date +%s)
+BASE_URL="http://127.0.0.1:5000/api"
 
 echo -e "${BLUE}=== Test de l'API Roomly ===${NC}\n"
 
@@ -27,18 +24,14 @@ display_result() {
 
 # 1. Test d'inscription
 echo -e "${BLUE}1. Test d'inscription utilisateur${NC}"
-# Utiliser le timestamp pour créer un email unique
-USER_EMAIL="test_${TIMESTAMP}@example.com"
-echo "Email utilisé: $USER_EMAIL"
-
 REGISTER_RESPONSE=$(curl -s -w "%{http_code}" -X POST $BASE_URL/auth/register \
   -H "Content-Type: application/json" \
-  -d "{
-    \"email\": \"$USER_EMAIL\",
-    \"password\": \"motdepasse123\",
-    \"first_name\": \"John\",
-    \"last_name\": \"Doe\"
-  }")
+  -d '{
+    "email": "test@example.com",
+    "password": "motdepasse123",
+    "first_name": "John",
+    "last_name": "Doe"
+  }')
 
 HTTP_CODE=${REGISTER_RESPONSE: -3}
 CONTENT=${REGISTER_RESPONSE:0:${#REGISTER_RESPONSE}-3}
@@ -51,10 +44,10 @@ display_result $([ $HTTP_CODE -eq 201 ] || [ $HTTP_CODE -eq 400 ] && echo 0 || e
 echo -e "${BLUE}2. Test de connexion${NC}"
 LOGIN_RESPONSE=$(curl -s -w "%{http_code}" -X POST $BASE_URL/auth/login \
   -H "Content-Type: application/json" \
-  -d "{
-    \"email\": \"$USER_EMAIL\",
-    \"password\": \"motdepasse123\"
-  }")
+  -d '{
+    "email": "test@example.com",
+    "password": "motdepasse123"
+  }')
 
 HTTP_CODE=${LOGIN_RESPONSE: -3}
 CONTENT=${LOGIN_RESPONSE:0:${#LOGIN_RESPONSE}-3}
@@ -85,46 +78,41 @@ if [ ! -z "$TOKEN" ]; then
   # Afficher la requête pour le débogage
   echo "Envoi de la requête POST à $BASE_URL/rooms"
   
-  # Utiliser un slug unique avec timestamp
-  ROOM_SLUG="salle-test-${TIMESTAMP}"
-  echo "Slug utilisé: $ROOM_SLUG"
-  
   # Utilisez les valeurs correctes qui correspondent à votre schéma
   ROOM_CREATE_RESPONSE=$(curl -s -w "%{http_code}" -X POST $BASE_URL/rooms \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $TOKEN" \
-    -d "{
-      \"name\": \"Salle de test $TIMESTAMP\",
-      \"slug\": \"$ROOM_SLUG\",
-      \"description\": \"Description test\",
-      \"shortDescription\": \"Description courte\",
-      \"category\": \"Standard\",
-      \"type\": \"Moyenne\",
-      \"capacity\": {
-        \"min\": 5,
-        \"max\": 20,
-        \"optimal\": 10
+    -d '{
+      "name": "Salle de test",
+      "slug": "salle-test",
+      "description": "Description test",
+      "shortDescription": "Description courte",
+      "category": "Standard",
+      "type": "Moyenne",
+      "capacity": {
+        "min": 5,
+        "max": 20,
+        "optimal": 10
       },
-      \"size\": 30,
-      \"pricePerHour\": 50,
-      \"pricePerDay\": 300,
-      \"location\": {
-        \"address\": \"123 rue de Test\",
-        \"city\": \"Ville Test\",
-        \"postalCode\": \"75000\",
-        \"country\": \"France\",
-        \"coordinates\": {
-          \"lat\": 48.8566,
-          \"lng\": 2.3522
+      "size": 30,
+      "pricePerHour": 50,
+      "pricePerDay": 300,
+      "location": {
+        "address": "123 rue de Test",
+        "city": "Ville Test",
+        "postalCode": "75000",
+        "country": "France",
+        "coordinates": {
+          "lat": 48.8566,
+          "lng": 2.3522
         }
       },
-      \"amenities\": [],
-      \"services\": [],
-      \"images\": [],
-      \"availabilityConfirmationRequired\": false,
-      \"rating\": 4.5,
-      \"reviews\": 0
-    }")
+      "amenities": [],
+      "services": [],
+      "images": [],
+      "availabilityConfirmationRequired": false,
+      "rating": 4.5,
+      "reviews": 0
+    }')
 
   HTTP_CODE=${ROOM_CREATE_RESPONSE: -3}
   CONTENT=${ROOM_CREATE_RESPONSE:0:${#ROOM_CREATE_RESPONSE}-3}

@@ -118,7 +118,7 @@ jobs:
         
         # Wait for the proxy to be ready
         for i in {1..30}; do
-          if nc -z localhost 5432; then
+          if nc -z 127.0.0.1 5432; then
             echo "Cloud SQL Auth proxy is ready"
             break
           fi
@@ -130,7 +130,7 @@ jobs:
           sleep 1
         done
         
-        # Run migrations using localhost connection
+        # Run migrations using 127.0.0.1 connection
         export DATABASE_URL=${{ secrets.DATABASE_URL }}
         alembic upgrade head
 

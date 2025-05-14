@@ -20,7 +20,7 @@ def test_hello_endpoint_development(client):
     data = response.get_json()
     assert data['message'] == 'Hello from Local Development!'
     assert data['environment'] == 'development'
-    assert data['url'] == 'http://localhost:8080'
+    assert data['url'] == 'http://127.0.0.1:8080'
 
 def test_hello_endpoint_production(client):
     """Test the /api/hello endpoint in production environment."""
