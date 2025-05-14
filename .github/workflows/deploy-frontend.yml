@@ -31,15 +31,20 @@ jobs:
 
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
 
-    - name: Authorize Docker push
-      run: gcloud auth configure-docker
+    - name: Configure Docker
+      run: |
+        gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin europe-west1-docker.pkg.dev
 
     - name: Build and Push Container
       run: |
         cd frontend
-        docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} .
-        docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }}
+        IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/react-app/react-app-prod:${{ github.sha }}"
+        docker build -t $IMAGE_NAME .
+        docker push $IMAGE_NAME
+
 
   deploy:
     name: Deploy
@@ -60,9 +65,9 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Deploy to Cloud Run
-      uses: google-github-actions/deploy-cloudrun@v2
+      uses: google-github-actions/deploy-cloudrun@v1
       with:
         service: ${{ env.SERVICE_NAME }}
         region: ${{ env.REGION }}
-        image: gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
-        flags: '--platform managed --allow-unauthenticated' 
+        image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/react-app/react-app-dev:${{ github.sha }}
+        flags: '--platform managed --allow-unauthenticated --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'

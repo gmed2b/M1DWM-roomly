@@ -11,10 +11,11 @@ app = create_app()
 
 if __name__ == "__main__":
     # Check if we're running in production (Docker/Cloud)
+    port = int(os.environ.get("PORT", 8080))
     is_production = os.getenv("FLASK_ENV") == "production"
     print(f"Running in {'production' if is_production else 'development'} mode")
 
     if is_production:
-        app.run(host="0.0.0.0", port=8080)
+        app.run(host="0.0.0.0", port=port)
     else:
         app.run(debug=True)

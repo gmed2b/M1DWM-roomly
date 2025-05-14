@@ -1,11 +1,11 @@
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.cloud_monitoring import CloudMonitoringMetricsExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from prometheus_client import Counter, Histogram, generate_latest
 from flask import request
 import time
+import os
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
@@ -20,8 +20,14 @@ REQUEST_LATENCY = Histogram(
 def setup_monitoring(app):
     # Setup OpenTelemetry
     tracer_provider = TracerProvider()
-    gcp_monitoring_exporter = CloudMonitoringMetricsExporter()
-    tracer_provider.add_span_processor(BatchSpanProcessor(gcp_monitoring_exporter))
+
+    # Only enable Cloud Trace exporter in production
+    if os.getenv("ENABLE_CLOUD_MONITORING", "false").lower() == "true":
+        from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+
+        gcp_trace_exporter = CloudTraceSpanExporter()
+        tracer_provider.add_span_processor(BatchSpanProcessor(gcp_trace_exporter))
+
     trace.set_tracer_provider(tracer_provider)
 
     # Instrument Flask

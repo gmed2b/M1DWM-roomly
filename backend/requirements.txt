@@ -17,4 +17,10 @@ opentelemetry-instrumentation-flask
 opentelemetry-instrumentation-wsgi
 opentelemetry-resourcedetector-gcp
 google-cloud-monitoring
+google-api-core
+google-auth
+google-cloud-core
+google-cloud-monitoring
+google-cloud-trace
+googleapis-common-protos
 prometheus_client
