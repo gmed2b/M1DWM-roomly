@@ -1,29 +1,38 @@
 "use client";
 
-// import useSWR from 'swr'
 import CategoryCard from "@/components/CategoryCard";
 import { RoomCard } from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { newRooms, popularRooms } from "@/data/rooms";
+import env from '@/env';
+import { fetcher } from "@/lib/utils";
 import { LucideArrowRight, LucideSearch } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import useSWR from 'swr';
 
 export default function HomePage() {
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // const { } = useSWR(``);
+  const { data, isLoading, error } = useSWR(`${env.API_URL}/api/rooms`, fetcher);
+  console.log("🚀 ~ file: page.tsx:20 ~ HomePage ~ data:", data);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
       router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
     }
   };
+
+  if (error) {
+    console.error("Error fetching data:", error);
+    return <div>Error loading data</div>;
+  };
+  if (isLoading) return <div>chargement...</div>;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">

@@ -22,7 +22,7 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # Initialiser CORS
-    CORS(app)
+    CORS(app, origins=["*"])
 
     # Initialiser les extensions
     db.init_app(app)
