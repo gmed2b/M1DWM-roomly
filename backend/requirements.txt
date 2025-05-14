@@ -10,5 +10,11 @@ pydantic
 pydantic[email]
 opentelemetry-api
 opentelemetry-sdk
+opentelemetry-exporter-gcp-trace
+opentelemetry-exporter-gcp-monitoring
+opentelemetry-instrumentation
+opentelemetry-instrumentation-flask
+opentelemetry-instrumentation-wsgi
+opentelemetry-resourcedetector-gcp
 google-cloud-monitoring
 prometheus_client

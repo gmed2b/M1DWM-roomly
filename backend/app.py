@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = create_app()
-setup_monitoring(app)
+# setup_monitoring(app)
 
 if __name__ == "__main__":
     # Check if we're running in production (Docker/Cloud)
