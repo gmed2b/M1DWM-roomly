@@ -1,6 +1,6 @@
 pytest
 python-dotenv
-jwt
+pyjwt
 Flask
 Flask-SQLAlchemy
 flask-cors

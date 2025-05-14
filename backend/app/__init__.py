@@ -60,7 +60,7 @@ def create_app():
                 {
                     "message": "Hello from Local Development!",
                     "environment": "development",
-                    "url": "http://localhost:8080",
+                    "url": "http://127.0.0.1:8080",
                 }
             )
 
