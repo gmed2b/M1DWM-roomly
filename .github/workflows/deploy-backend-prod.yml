@@ -130,7 +130,7 @@ jobs:
         done
         
         # Run migrations using 127.0.0.1 connection
-        export DATABASE_URL=${{ secrets.DATABASE_URL }}
+        export DATABASE_URL="postgresql+psycopg2://flask_app_user:${{ secrets.DB_PASSWORD }}@localhost:5432/roomly_db"
         alembic upgrade head
 
     - name: Deploy to Cloud Run
