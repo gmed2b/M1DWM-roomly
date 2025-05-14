@@ -1,14 +1,14 @@
-name: Deploy Backend to Cloud Run
+name: Deploy Backend to Cloud Run (Dev)
 
 on:
   push:
     branches:
-      - main
+      - dev
       - test-pipeline
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  SERVICE_NAME: roomly-backend
+  SERVICE_NAME: roomly-backend-dev
   REGION: europe-west1
   REPOSITORY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/flask-app
 
@@ -42,7 +42,7 @@ jobs:
     - name: Build and Push Container
       run: |
         cd backend
-        IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app:${{ github.sha }}"
+        IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app-dev:${{ github.sha }}"
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
 
@@ -58,7 +58,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Install dependencies
       run: |
@@ -73,7 +73,7 @@ jobs:
 
   deploy:
     name: Deploy
-    needs: [build, test]  # This ensures deploy only runs if both build and tests pass
+    needs: [build, test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -97,7 +97,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Install Cloud SQL Proxy
       run: |
@@ -131,17 +131,17 @@ jobs:
         done
         
         # Run migrations using localhost connection
-        export DATABASE_URL=${{ secrets.DATABASE_URL }}
+        export DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}
         alembic upgrade head
 
     - name: Deploy to Cloud Run
       uses: google-github-actions/deploy-cloudrun@v1
       with:
         service: ${{ env.SERVICE_NAME }}
-        image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app:${{ github.sha }}
+        image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app-dev:${{ github.sha }}
         region: ${{ env.REGION }}
         flags: '--platform managed --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
         env_vars: |
-          FLASK_ENV=production
+          FLASK_ENV=development
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          DATABASE_URL=${{ secrets.DATABASE_URL_DEV }} 

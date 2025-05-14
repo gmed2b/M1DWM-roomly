@@ -1,5 +1,6 @@
 "use client";
 
+// import useSWR from 'swr'
 import CategoryCard from "@/components/CategoryCard";
 import { RoomCard } from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,8 @@ export default function HomePage() {
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  // const { } = useSWR(``);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {

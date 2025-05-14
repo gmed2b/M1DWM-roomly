@@ -10,7 +10,6 @@ Ce dossier contient l'API de **Roomly**, l'application de réservation de salles
 - **[SQLAlchemy](https://www.sqlalchemy.org/)** — ORM pour la gestion de la base de données
 - **[Pydantic](https://docs.pydantic.dev/)** — Validation des données
 - **[Alembic](https://alembic.sqlalchemy.org/)** — Gestion des migrations de base de données
-- **[Supabase](https://supabase.com/)** — Base de données PostgreSQL
 - **Python 3.10+** — Langage de programmation
 
 ---
@@ -34,7 +33,7 @@ pip install -r requirements.txt
 flask run
 
 # L'API sera accessible à l'adresse :
-# http://localhost:8000
+# http://127.0.0.1:8000
 ```
 
 ---
@@ -75,7 +74,7 @@ Créez un fichier `.env` à la racine du dossier backend avec les variables suiv
 ```env
 FLASK_APP=app
 FLASK_ENV=development
-DATABASE_URL=postgresql://user:password@localhost:5432/roomly
+DATABASE_URL=postgresql://user:password@127.0.0.1:5432/roomly
 SECRET_KEY=votre_cle_secrete
 ```
 
