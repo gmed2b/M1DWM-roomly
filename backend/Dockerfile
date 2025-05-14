@@ -7,7 +7,7 @@ WORKDIR /app
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    FLASK_APP=app.py \
+    FLASK_APP=run.py \
     FLASK_ENV=production
 
 # Install system dependencies
@@ -29,4 +29,4 @@ COPY . .
 EXPOSE 8080
 
 # Command to run the application
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"] 
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "run:app"] 
