@@ -1,0 +1,147 @@
+name: Deploy Backend to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_NAME: roomly-backend
+  REGION: europe-west1
+  REPOSITORY: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/flask-app
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Configure Docker
+      run: |
+        gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin europe-west1-docker.pkg.dev
+
+    - name: Build and Push Container
+      run: |
+        cd backend
+        IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app:${{ github.sha }}"
+        docker build -t $IMAGE_NAME .
+        docker push $IMAGE_NAME
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v
+
+  deploy:
+    name: Deploy
+    needs: [build, test]  # This ensures deploy only runs if both build and tests pass
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Cloud SQL Proxy
+      run: |
+        wget https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.8.1/cloud-sql-proxy.linux.amd64 -O /usr/local/bin/cloud_sql_proxy
+        chmod +x /usr/local/bin/cloud_sql_proxy
+
+    - name: Run Database Migrations
+      run: |
+        cd backend
+        # Install dependencies
+        python -m venv venv
+        source venv/bin/activate
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+        # Start Cloud SQL Auth proxy in the background
+        /usr/local/bin/cloud_sql_proxy ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} &
+        
+        # Wait for the proxy to be ready
+        for i in {1..30}; do
+          if nc -z 127.0.0.1 5432; then
+            echo "Cloud SQL Auth proxy is ready"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "Cloud SQL Auth proxy failed to start"
+            exit 1
+          fi
+          echo "Waiting for Cloud SQL Auth proxy to start... ($i/30)"
+          sleep 1
+        done
+        
+        # Run migrations using 127.0.0.1 connection
+        export DATABASE_URL=${{ secrets.DATABASE_URL }}
+        alembic upgrade head
+
+    - name: Deploy to Cloud Run
+      uses: google-github-actions/deploy-cloudrun@v1
+      with:
+        service: ${{ env.SERVICE_NAME }}
+        image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app:${{ github.sha }}
+        region: ${{ env.REGION }}
+        flags: '--platform managed --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+        env_vars: |
+          FLASK_ENV=production
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}
