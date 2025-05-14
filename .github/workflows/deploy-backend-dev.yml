@@ -3,7 +3,7 @@ name: Deploy Backend to Cloud Run (Dev)
 on:
   push:
     branches:
-      - dev
+      - develop
       - test-pipeline
 
 env:

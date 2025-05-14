@@ -3,7 +3,7 @@ name: Deploy Frontend Dev to Cloud Run
 on:
   push:
     branches:
-      - dev
+      - develop
       - test-pipeline
 
 
