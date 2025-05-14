@@ -114,7 +114,7 @@ jobs:
         pip install -r requirements.txt
         
         # Start Cloud SQL Auth proxy in the background
-        /usr/local/bin/cloud_sql_proxy ${{ secrets.CLOUD_SQL_CONNECTION_NAME_DEV }} &
+        /usr/local/bin/cloud_sql_proxy ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} &
         
         # Wait for the proxy to be ready
         for i in {1..30}; do
@@ -140,7 +140,7 @@ jobs:
         service: ${{ env.SERVICE_NAME }}
         image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/flask-app/flask-app-dev:${{ github.sha }}
         region: ${{ env.REGION }}
-        flags: '--platform managed --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME_DEV }} --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+        flags: '--platform managed --allow-unauthenticated --add-cloudsql-instances ${{ secrets.CLOUD_SQL_CONNECTION_NAME }} --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
         env_vars: |
           FLASK_ENV=development
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
