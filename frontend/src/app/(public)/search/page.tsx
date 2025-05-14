@@ -1,9 +1,14 @@
 "use client";
+import { RoomCard } from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import env from "@/env";
+import { fetcher } from "@/lib/utils";
+import { Room } from "@/types/room";
 import { useState } from "react";
+import useSWR from "swr";
 
 // Types
 type RoomType = "small" | "medium" | "large" | "atypical" | "all";
@@ -43,6 +48,35 @@ export default function SearchPage() {
       return { ...prev, equipment: [...prev.equipment, id] };
     });
   };
+
+  const { data: rooms, isLoading, error } = useSWR<Room[]>(`${env.API_URL}/api/rooms`, fetcher);
+
+  // Filtrage dynamique côté client
+  const filteredRooms = (rooms || []).filter((room) => {
+    // Type
+    if (filters.type !== "all") {
+      if (filters.type === "small" && room.type !== "Petite") return false;
+      if (filters.type === "medium" && room.type !== "Moyenne") return false;
+      if (filters.type === "large" && room.type !== "Grande") return false;
+      if (filters.type === "atypical" && room.type !== "Espace Atypique") return false;
+    }
+    // Catégorie
+    if (filters.category !== "all") {
+      if (filters.category === "standard" && room.category !== "Standard") return false;
+      if (filters.category === "premium" && room.category !== "Premium") return false;
+      if (filters.category === "high-end" && room.category !== "Haut de Gamme") return false;
+    }
+    // Capacité
+    if (room.capacity.max < filters.capacity) return false;
+    // Prix
+    if (room.pricePerHour < filters.priceRange[0] || room.pricePerHour > filters.priceRange[1]) return false;
+    // Equipements (tous doivent être présents)
+    if (filters.equipment.length > 0) {
+      const roomAmenityNames = room.amenities.map((a) => a.name.toLowerCase());
+      if (!filters.equipment.every((eq) => roomAmenityNames.includes(eq.toLowerCase()))) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="container mx-auto px-4 py-8 flex gap-8">
@@ -129,11 +163,22 @@ export default function SearchPage() {
             ))}
           </div>
         </div>
-        <Button className="w-full mt-4">Apply Filters</Button>
+        <Button className="w-full mt-4" type="button" onClick={() => { }}>
+          Apply Filters
+        </Button>
       </aside>
       <main className="w-3/4">
         <h1 className="text-2xl font-bold mb-4">Search Results</h1>
-        <p>Results will appear here based on applied filters.</p>
+        {isLoading && <div>chargement...</div>}
+        {error && <div className="text-red-500">Erreur de chargement</div>}
+        {filteredRooms.length === 0 && !isLoading && (
+          <div className="text-gray-500">Aucune salle trouvée avec ces filtres.</div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRooms.map((room) => (
+            <RoomCard key={room.id} room={room} />
+          ))}
+        </div>
       </main>
     </div>
   );

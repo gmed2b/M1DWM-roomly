@@ -5,62 +5,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import env from "@/env";
-import { BookingCreate, BookingResponse } from "@/types/booking";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { BookingCreate } from "@/types/booking";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-export default function EditBookingPage() {
+export default function NewBookingPage() {
   const router = useRouter();
-  const params = useParams();
-  const bookingId = params?.slug as string;
-  const [form, setForm] = useState<BookingCreate | null>(null);
+  const [form, setForm] = useState<BookingCreate>({
+    room_id: "",
+    user_id: "",
+    date: "",
+    start_time: "",
+    end_time: "",
+    is_full_day: false,
+    attendees: 1,
+    services: [],
+    total_price: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!bookingId) return;
-    (async () => {
-      const res = await fetch(`${env.API_URL}/api/bookings/${bookingId}`);
-      if (!res.ok) return setError("Erreur de chargement");
-      const data: BookingResponse = await res.json();
-      setForm({
-        room_id: data.room_id,
-        user_id: data.user_id,
-        date: data.date,
-        start_time: data.start_time,
-        end_time: data.end_time,
-        is_full_day: data.is_full_day,
-        attendees: data.attendees,
-        services: data.services,
-        total_price: data.total_price,
-      });
-    })();
-  }, [bookingId]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    let newValue: string | boolean = value;
-    if (type === "checkbox") {
-      newValue = (e.target as HTMLInputElement).checked;
-    }
-    setForm((prev) => prev ? ({
+    const target = e.target as HTMLInputElement;
+    const { name, value, type, checked } = target;
+    setForm((prev) => ({
       ...prev,
-      [name]: newValue,
-    }) : prev);
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${env.API_URL}/api/bookings/${bookingId}`, {
-        method: "PUT",
+      const res = await fetch(`${env.API_URL}/api/bookings`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error("Erreur lors de la modification");
+      if (!res.ok) throw new Error("Erreur lors de la création");
       router.push("/admin/bookings");
     } catch (err: any) {
       setError(err.message);
@@ -69,12 +53,10 @@ export default function EditBookingPage() {
     }
   };
 
-  if (!form) return <div className="text-center py-8">Chargement...</div>;
-
   return (
     <Card className="max-w-xl mx-auto mt-8">
       <CardHeader>
-        <CardTitle>Edit Booking</CardTitle>
+        <CardTitle>New Booking</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -113,7 +95,7 @@ export default function EditBookingPage() {
             <Input name="total_price" type="number" min={0} value={form.total_price} onChange={handleChange} />
           </div>
           {error && <div className="text-red-500">{error}</div>}
-          <Button type="submit" disabled={loading} className="w-full">{loading ? "Saving..." : "Update Booking"}</Button>
+          <Button type="submit" disabled={loading} className="w-full">{loading ? "Saving..." : "Create Booking"}</Button>
         </form>
       </CardContent>
     </Card>

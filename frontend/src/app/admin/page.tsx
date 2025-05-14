@@ -2,6 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import env from "@/env";
+import { fetcher } from "@/lib/utils";
+import type { BookingResponse } from "@/types/booking";
+import type { Room } from "@/types/room";
 import {
   LucideActivity,
   LucideBuilding,
@@ -11,31 +15,63 @@ import {
   LucideUsers,
 } from "lucide-react";
 import Link from "next/link";
+import useSWR from "swr";
 
 export default function AdminDashboard() {
-  // Mock data - in a real application, this would come from an API
+  const { data: rooms, isLoading: isLoadingRooms } = useSWR<Room[]>(`${env.API_URL}/api/rooms`, fetcher);
+  const { data: bookings, isLoading: isLoadingBookings } = useSWR<BookingResponse[]>(`${env.API_URL}/api/bookings`, fetcher);
+
+  // Stats dynamiques
   const stats = [
-    { name: "Total Rooms", value: "42", icon: LucideBuilding, change: "+8% from last month" },
-    { name: "Active Bookings", value: "18", icon: LucideCalendar, change: "+12% from last month" },
-    { name: "Total Revenue", value: "€9,850", icon: LucideDollarSign, change: "+23% from last month" },
-    { name: "Active Users", value: "156", icon: LucideUsers, change: "+5% from last month" },
+    {
+      name: "Total Rooms",
+      value: rooms ? rooms.length : "-",
+      icon: LucideBuilding,
+      change: "",
+    },
+    {
+      name: "Active Bookings",
+      value: bookings ? bookings.filter(b => b.status === "confirmed").length : "-",
+      icon: LucideCalendar,
+      change: "",
+    },
+    {
+      name: "Total Revenue",
+      value: bookings ? `€${bookings.reduce((acc, b) => acc + (b.total_price || 0), 0)}` : "-",
+      icon: LucideDollarSign,
+      change: "",
+    },
+    {
+      name: "Active Users",
+      value: bookings ? new Set(bookings.map(b => b.user_id)).size : "-",
+      icon: LucideUsers,
+      change: "",
+    },
   ];
 
-  const recentBookings = [
-    { id: "B-12345", room: "Conference Room A", user: "Sophie Martin", date: "May 5, 2025", status: "Confirmed" },
-    { id: "B-12346", room: "Meeting Room 101", user: "Lucas Bernard", date: "May 7, 2025", status: "Pending" },
-    { id: "B-12347", room: "Creative Space", user: "Emma Dubois", date: "May 8, 2025", status: "Confirmed" },
-    { id: "B-12348", room: "Executive Suite", user: "Thomas Leroy", date: "May 10, 2025", status: "Pending" },
-    { id: "B-12349", room: "Digital Studio", user: "Camille Petit", date: "May 12, 2025", status: "Confirmed" },
-  ];
+  // Bookings récents (5 derniers)
+  const recentBookings = (bookings || [])
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5)
+    .map(b => ({
+      id: b.id,
+      room: rooms?.find(r => r.id === b.room_id)?.name || b.room_id,
+      user: b.user_id,
+      date: b.date,
+      status: b.status.charAt(0).toUpperCase() + b.status.slice(1),
+    }));
 
-  const recentRooms = [
-    { id: "R-4001", name: "Conference Room A", type: "Premium", capacity: "20", status: "Available" },
-    { id: "R-4002", name: "Meeting Room 101", type: "Standard", capacity: "8", status: "Occupied" },
-    { id: "R-4003", name: "Creative Space", type: "Premium", capacity: "15", status: "Available" },
-    { id: "R-4004", name: "Digital Studio", type: "Premium", capacity: "12", status: "Maintenance" },
-    { id: "R-4005", name: "Executive Suite", type: "Luxury", capacity: "6", status: "Available" },
-  ];
+  // Rooms récentes (5 dernières)
+  const recentRooms = (rooms || [])
+    .sort((a, b) => b.id.localeCompare(a.id))
+    .slice(0, 5)
+    .map(r => ({
+      id: r.id,
+      name: r.name,
+      type: r.category,
+      capacity: r.capacity.max,
+      status: r.availabilityConfirmationRequired ? "Occupied" : "Available",
+    }));
 
   return (
     <div className="space-y-8">
@@ -103,13 +139,12 @@ export default function AdminDashboard() {
                         <td className="py-3">{booking.date}</td>
                         <td className="py-3">
                           <span
-                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                              booking.status === "Confirmed"
+                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${booking.status === "Confirmed"
                                 ? "bg-green-100 text-green-700"
                                 : booking.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
                           >
                             {booking.status}
                           </span>
@@ -158,13 +193,12 @@ export default function AdminDashboard() {
                         <td className="py-3">{room.capacity}</td>
                         <td className="py-3">
                           <span
-                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                              room.status === "Available"
+                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${room.status === "Available"
                                 ? "bg-green-100 text-green-700"
                                 : room.status === "Occupied"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
                           >
                             {room.status}
                           </span>
