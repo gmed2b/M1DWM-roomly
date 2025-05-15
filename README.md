@@ -20,9 +20,9 @@
 | --------------- | -------------------------------------- |
 | Frontend        | Next.js, Shadcn                        |
 | Backend         | Flask                                  |
-| Base de données | Supabase, PostgreSQL                   |
-| CI/CD           | GitHub Actions, Docker, Docker Compose |
-| Infra           | NGINX, Docker Compose                  |
+| Base de données | PostgreSQL, Google Cloud SQL           |
+| CI/CD           | GitHub Actions, Dockerfile             |
+| Infra           | Google Cloud Run                       |
 
 ---
 
@@ -33,11 +33,8 @@
 roomly/
 ├── frontend/             # Site web (Next.js)
 ├── backend/              # REST API (Flask)
-├── infra/                # Docker, NGINX, configuration d’infrastructure
 ├── .github/              # Workflows GitHub Actions (CI/CD)
-├── docker-compose.yml
-├── README.md
-└── .env.example
+└── README.md
 
 ```
 
@@ -48,7 +45,6 @@ roomly/
 ### ⚙️ Prérequis
 
 - [Node.js](https://nodejs.org/)
-- [Docker + Docker Compose](https://www.docker.com/)
 - [Python 3.10+](https://www.python.org/)
 - [Git](https://git-scm.com/)
 
@@ -59,12 +55,29 @@ roomly/
 git clone https://github.com/gmed2b/M1DWM-roomly.git roomly
 cd roomly
 
-# Démarrer les services (frontend + backend)
-docker-compose up --build
+```
+
+#### Backend
+```bash
+cd backend
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+make run
+```
+
+#### Frontend
+
+```bash
+cd frontend
+
+npm install --legacy-peer-deps
+npm run dev
 ```
 
 - Frontend : [http://localhost:3000](http://localhost:3000)
-- Backend : [http://localhost:5000/docs](http://localhost:5000/docs) (Flask Swagger)
+- Backend : [http://localhost:8080](http://localhost:8080)
 
 ---
 
@@ -76,7 +89,6 @@ docker-compose up --build
 - `develop` : intégration continue (merge des fonctionnalités validées)
 - `feature/` : développement d’une nouvelle fonctionnalité
 - `fix/` : correction de bug
-- `hotfix/` : correction urgente en production
 
 ### 🧑‍💻 Développer une nouvelle fonctionnalité (frontend ou backend)
 
@@ -109,16 +121,8 @@ git push origin feature/nouvelle-fonction
 
 Les pipelines automatisent :
 
-- Lint, build et test du frontend (`.github/workflows/frontend.yml`)
-- Build, tests API et analyse statique backend (`backend.yml`)
-- Déploiement futur (Render, Railway, VPS...) après merge sur `main`
-
----
-
-## 📄 Documentation
-
-- `docs/architecture.md` : description de l’architecture logicielle
-- `docs/readme-sprintX.md` : livrables de chaque sprint Scrum
+- Lint et build et deploiement du frontend (`.github/workflows/deploy-frontend-*.yml`)
+- Build, tests et deploiement du backend (`.github/workflows/deploy-backend-*.yml`)
 
 ---
 

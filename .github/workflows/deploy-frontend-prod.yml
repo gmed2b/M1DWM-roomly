@@ -3,7 +3,7 @@ name: Deploy Frontend to Cloud Run
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main
 
 
 env:
@@ -94,6 +94,8 @@ jobs:
         region: ${{ env.REGION }}
         image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/react-app/react-app-dev:${{ github.sha }}
         flags: '--platform managed --allow-unauthenticated --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+        env_vars: |
+          NEXT_PUBLIC_API_URL=https://api.roomly.gelk.fr/
 
     - name: Health Check
       run: |
