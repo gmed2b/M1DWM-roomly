@@ -21,8 +21,24 @@ def create_app():
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # Initialiser CORS
-    CORS(app, origins=["*"])
+    # Configuration CORS
+    allowed_origins = [
+        "http://localhost:3000",  # React development server
+        "http://localhost:8080",  # Flask development server
+        "https://dev.roomly.gelk.fr",
+        "https://roomly.gelk.fr",
+    ]
+
+    CORS(
+        app,
+        resources={
+            r"/api/*": {"origins": allowed_origins},
+            r"/metrics": {"origins": allowed_origins},
+        },
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    )
 
     # Initialiser les extensions
     db.init_app(app)
