@@ -1,29 +1,43 @@
 "use client";
 
-// import useSWR from 'swr'
 import CategoryCard from "@/components/CategoryCard";
 import { RoomCard } from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { newRooms, popularRooms } from "@/data/rooms";
+import { fetcher } from "@/lib/utils";
+import type { Room } from "@/types/room";
 import { LucideArrowRight, LucideSearch } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import useSWR from 'swr';
 
 export default function HomePage() {
   const router = useRouter();
-
   const [searchQuery, setSearchQuery] = useState("");
 
-  // const { } = useSWR(``);
+  // Chargement des rooms depuis l'API
+  const { data: rooms, isLoading, error } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
       router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
     }
   };
+
+  // Filtrage des rooms populaires et nouveautés
+  const popularRooms = rooms?.filter((room) => (room.rating ?? 0) >= 4.5).slice(0, 6) ?? [];
+  const newRooms = rooms ? [...rooms].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 6) : [];
+
+  // Catégories personnalisées (exemple)
+  const categories = [
+    { title: "Small Meetings", type: "Petite", imageSrc: "https://picsum.photos/300/200" },
+    { title: "Conference Halls", type: "Grande", imageSrc: "https://picsum.photos/301/201" },
+    { title: "Premium Spaces", type: "Premium", imageSrc: "https://picsum.photos/302/202" },
+    { title: "Atypical Venues", type: "Espace Atypique", imageSrc: "https://picsum.photos/303/203" },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -77,29 +91,37 @@ export default function HomePage() {
             <section>
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Popular Spaces</h2>
-                <Button variant="link" className="flex items-center">
-                  View all <LucideArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href={"/search?popular=true"}>
+                  <Button variant="link" className="flex items-center">
+                    View all <LucideArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {popularRooms.map((room) => (
-                  <RoomCard key={room.id} room={room} />
-                ))}
+                {isLoading
+                  ? Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-40 rounded-lg" />
+                  ))
+                  : error
+                    ? <div className="col-span-3 text-center text-red-500">Erreur de chargement des salles</div>
+                    : popularRooms.slice(0, 3).map((room) => <RoomCard key={room.id} room={room} />)
+                }
               </div>
             </section>
-
             {/* Featured Categories */}
             <section>
               <h2 className="text-2xl font-bold mb-6">Find By Category</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <CategoryCard title="Small Meetings" imageSrc="https://picsum.photos/300/200" count={24} />
-                <CategoryCard title="Conference Halls" imageSrc="https://picsum.photos/301/201" count={18} />
-                <CategoryCard title="Premium Spaces" imageSrc="https://picsum.photos/302/202" count={12} />
-                <CategoryCard title="Atypical Venues" imageSrc="https://picsum.photos/303/203" count={8} />
+                {categories.map((cat) => (
+                  <CategoryCard
+                    key={cat.title}
+                    title={cat.title}
+                    imageSrc={cat.imageSrc}
+                    count={rooms ? rooms.filter((r) => r.type === cat.type || r.category === cat.title).length : 0}
+                  />
+                ))}
               </div>
             </section>
-
             {/* New Locations */}
             <section>
               <div className="flex justify-between items-center mb-6">
@@ -108,17 +130,19 @@ export default function HomePage() {
                   View all <LucideArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* This would be populated with actual data */}
-                {newRooms.map((room) => (
-                  <RoomCard key={room.id} room={room} />
-                ))}
+                {isLoading
+                  ? Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-40 rounded-lg" />
+                  ))
+                  : error
+                    ? <div className="col-span-3 text-center text-red-500">Erreur de chargement des salles</div>
+                    : newRooms.map((room) => <RoomCard key={room.id} room={room} />)
+                }
               </div>
             </section>
           </TabsContent>
 
-          {/* Other tabs would have similar content structure */}
           <TabsContent value="meetings">
             <div className="text-center py-16">
               <h3 className="text-xl text-gray-600">Meeting Rooms Content</h3>

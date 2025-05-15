@@ -1,4 +1,4 @@
-name: Deploy Backend to Cloud Run
+name: Deploy Backend to Cloud Run (Prod)
 
 on:
   push:
@@ -129,8 +129,8 @@ jobs:
           sleep 1
         done
         
-        # Run migrations using 127.0.0.1 connection
-        export DATABASE_URL=${{ secrets.DATABASE_URL }}
+        # Run migrations using localhost connection
+        export DATABASE_URL="postgresql+psycopg2://flask_app_user:${{ secrets.DB_PASSWORD }}@localhost:5432/roomly_db"
         alembic upgrade head
 
     - name: Deploy to Cloud Run
@@ -145,3 +145,41 @@ jobs:
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           DATABASE_URL=${{ secrets.DATABASE_URL }}
           GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}
+          ENABLE_CLOUD_MONITORING=true
+
+  health-check:
+    name: Health Check
+    needs: deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Health Check
+      run: |
+        # Get the service URL
+        SERVICE_URL=https://api.roomly.gelk.fr/
+        
+        # Wait for the service to be ready (max 5 minutes)
+        for i in {1..30}; do
+          echo "Attempt $i: Checking service health..."
+          RESPONSE=$(curl -s -w "\nStatus Code: %{http_code}\n" -f "$SERVICE_URL" || echo "Failed to connect")
+          echo "Response: $RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q "Status Code: 200"; then
+            echo "Health check passed! Service is running."
+            exit 0
+          fi
+          
+          echo "Waiting for service to be ready... ($i/30)"
+          sleep 10
+        done
+        
+        echo "Health check failed after 5 minutes"
+        exit 1

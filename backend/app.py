@@ -18,4 +18,4 @@ if __name__ == "__main__":
     if is_production:
         app.run(host="0.0.0.0", port=port)
     else:
-        app.run(debug=True)
+        app.run(host="localhost", debug=True, port=port)

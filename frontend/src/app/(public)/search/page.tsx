@@ -1,9 +1,13 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { RoomCard } from "@/components/RoomCard";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+
+import { fetcher } from "@/lib/utils";
+import { Room } from "@/types/room";
 import { useState } from "react";
+import useSWR from "swr";
 
 // Types
 type RoomType = "small" | "medium" | "large" | "atypical" | "all";
@@ -15,6 +19,7 @@ interface FilterState {
   capacity: number;
   priceRange: [number, number];
   equipment: string[];
+  search: string; // Ajout du champ de recherche
 }
 
 const equipmentOptions = [
@@ -33,6 +38,7 @@ export default function SearchPage() {
     capacity: 10,
     priceRange: [0, 500],
     equipment: [],
+    search: "", // Initialisation du champ de recherche
   });
 
   const toggleEquipment = (id: string) => {
@@ -44,10 +50,60 @@ export default function SearchPage() {
     });
   };
 
+  const { data: rooms, isLoading, error } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
+
+  // Filtrage dynamique côté client
+  const filteredRooms = (rooms || []).filter((room) => {
+    // Recherche par nom ou description
+    if (filters.search.trim() !== "") {
+      const searchLower = filters.search.toLowerCase();
+      if (
+        !room.name.toLowerCase().includes(searchLower) &&
+        !room.description.toLowerCase().includes(searchLower)
+      ) {
+        return false;
+      }
+    }
+    // Type
+    if (filters.type !== "all") {
+      if (filters.type === "small" && room.type !== "Petite") return false;
+      if (filters.type === "medium" && room.type !== "Moyenne") return false;
+      if (filters.type === "large" && room.type !== "Grande") return false;
+      if (filters.type === "atypical" && room.type !== "Espace Atypique") return false;
+    }
+    // Catégorie
+    if (filters.category !== "all") {
+      if (filters.category === "standard" && room.category !== "Standard") return false;
+      if (filters.category === "premium" && room.category !== "Premium") return false;
+      if (filters.category === "high-end" && room.category !== "Haut de Gamme") return false;
+    }
+    // Capacité
+    if (room.capacity.max < filters.capacity) return false;
+    // Prix
+    if (room.pricePerHour < filters.priceRange[0] || room.pricePerHour > filters.priceRange[1]) return false;
+    // Equipements (tous doivent être présents)
+    if (filters.equipment.length > 0) {
+      const roomAmenityNames = room.amenities.map((a) => a.name.toLowerCase());
+      if (!filters.equipment.every((eq) => roomAmenityNames.includes(eq.toLowerCase()))) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="container mx-auto px-4 py-8 flex gap-8">
       <aside className="w-1/4 space-y-6">
         <h2 className="text-xl font-semibold">Filters</h2>
+        {/* Champ de recherche */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Search by name or description</h3>
+          <input
+            type="text"
+            className="w-full border rounded px-2 py-1 text-sm"
+            placeholder="Search..."
+            value={filters.search}
+            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+          />
+        </div>
         {/* Room Type */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Room Type</h3>
@@ -129,11 +185,22 @@ export default function SearchPage() {
             ))}
           </div>
         </div>
-        <Button className="w-full mt-4">Apply Filters</Button>
+        {/* <Button className="w-full mt-4" type="button" onClick={() => { }}>
+          Apply Filters
+        </Button> */}
       </aside>
       <main className="w-3/4">
         <h1 className="text-2xl font-bold mb-4">Search Results</h1>
-        <p>Results will appear here based on applied filters.</p>
+        {isLoading && <div>chargement...</div>}
+        {error && <div className="text-red-500">Erreur de chargement</div>}
+        {filteredRooms.length === 0 && !isLoading && (
+          <div className="text-gray-500">Aucune salle trouvée avec ces filtres.</div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRooms.map((room) => (
+            <RoomCard key={room.id} room={room} />
+          ))}
+        </div>
       </main>
     </div>
   );

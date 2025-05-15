@@ -21,7 +21,7 @@ Ce dossier contient l'API de **Roomly**, l'application de réservation de salles
 cd backend
 
 # Créer un environnement virtuel
-python -m venv venv
+python -m venv .venv
 source venv/bin/activate  # Sur Linux/Mac
 # ou
 .\venv\Scripts\activate  # Sur Windows
@@ -30,23 +30,21 @@ source venv/bin/activate  # Sur Linux/Mac
 pip install -r requirements.txt
 
 # Lancer le serveur de développement
-flask run
+make run
 
-# L'API sera accessible à l'adresse :
-# http://127.0.0.1:8000
 ```
+
+L'API sera accessible à l'adresse : [http://localhost:8080](http://localhost:8080)
 
 ---
 
 ## 🔧 Scripts disponibles
 
-| Commande                | Description                            |
-| ---------------------- | -------------------------------------- |
-| `flask run`            | Lance l'environnement de développement |
-| `flask db upgrade`     | Applique les migrations de base de données |
-| `pytest`               | Exécute les tests unitaires            |
-| `black .`              | Formatte le code avec Black            |
-| `flake8`               | Analyse du code avec Flake8            |
+| Commande               | Description                                |
+| ---------------------- | ------------------------------------------ |
+| `make run `            | Lance l'environnement de développement     |
+| `alembic upgrade head` | Applique les migrations de base de données |
+| `python3 -m pytest`    | Exécute les tests unitaires                |
 
 ---
 
@@ -54,14 +52,18 @@ flask run
 
 ```
 backend/
-├── app/                # Code source principal
-│   ├── api/           # Points d'entrée de l'API
+├── app/               # Code source principal
+│   ├── routes/           # Points d'entrée de l'API
 │   ├── models/        # Modèles de données
 │   ├── schemas/       # Schémas Pydantic
 │   └── services/      # Logique métier
-├── migrations/         # Fichiers de migration Alembic
+├── alembic/           # Fichiers de migration Alembic
 ├── tests/             # Tests unitaires
 ├── requirements.txt   # Dépendances Python
+├── Dockerfile         # Dockerfile pour le déploiement
+├── monitoring.py      # Monitoring de l'application
+├── app.py             # Point d'entrée de l'application
+├── run.py             # Script de démarrage en production
 └── ...
 ```
 
@@ -69,26 +71,10 @@ backend/
 
 ## 🔐 Variables d'environnement
 
-Créez un fichier `.env` à la racine du dossier backend avec les variables suivantes :
+Copiez le fichier `.env.example` en `.env` et modifiez les valeurs selon vos besoins.
 
-```env
-FLASK_APP=app
+```bash
 FLASK_ENV=development
-DATABASE_URL=postgresql://user:password@127.0.0.1:5432/roomly
-SECRET_KEY=votre_cle_secrete
+PORT=8080
+SECRET_KEY=your_secret_key
 ```
-
----
-
-## ✨ À venir
-
-- Implémentation complète des endpoints API
-- Système d'authentification
-- Validation des données
-- Tests unitaires et d'intégration
-
----
-
-## 👨‍💻 Auteur
-
-Projet développé dans le cadre du **Master Informatique** 

@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
+import { getAuthToken, getUser } from "@/lib/auth";
+import { User } from "@/types/user";
 import { LucideBuilding, LucideCalendar, LucideHome, LucideMenu, LucideSearch } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 
@@ -11,6 +14,15 @@ export default function Header() {
   const pathname = usePathname();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [_userState, setUserState] = useState<User | null>(null);
+
+  useEffect(() => {
+    const token = getAuthToken();
+    const userObj = getUser();
+    setIsAuthenticated(!!token);
+    setUserState(userObj);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -26,54 +38,44 @@ export default function Header() {
           <nav className="hidden md:flex items-center space-x-8">
             <Link
               href="/"
-              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
-                pathname === "/" ? "text-primary" : ""
-              }`}
+              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${pathname === "/" ? "text-primary" : ""
+                }`}
             >
               <LucideHome className="h-4 w-4 mr-1" />
               Home
             </Link>
             <Link
               href="/search"
-              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
-                pathname === "/search" ? "text-primary" : ""
-              }`}
+              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${pathname === "/search" ? "text-primary" : ""
+                }`}
             >
               <LucideSearch className="h-4 w-4 mr-1" />
               Explore
             </Link>
-            {/* <Link
-              href="/bookings"
-              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
-                pathname === "/bookings" ? "text-primary" : ""
-              }`}
-            >
-              <LucideCalendar className="h-4 w-4 mr-1" />
-              Bookings
-            </Link>
-            <Link
-              href="/host"
-              className={`flex items-center text-sm font-medium text-gray-700 hover:text-primary ${
-                pathname === "/host" ? "text-primary" : ""
-              }`}
-            >
-              <LucideBuilding className="h-4 w-4 mr-1" />
-              List Your Space
-            </Link> */}
           </nav>
 
           {/* User Actions */}
           <div className="flex items-center gap-4">
-            <Link href="/register">
-              <Button variant="outline" size="sm" className="hidden md:flex">
-                Sign Up
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button size="sm" className="hidden md:flex">
-                Log In
-              </Button>
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link href="/register">
+                  <Button variant="outline" size="sm" className="hidden md:flex">
+                    Sign Up
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="sm" className="hidden md:flex">
+                    Log In
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <Link href="/admin">
+                <Button size="sm" className="hidden md:flex">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            )}
 
             {/* Mobile Menu Trigger */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -128,16 +130,26 @@ export default function Header() {
                   </nav>
 
                   <div className="mt-auto border-t p-6 flex flex-col gap-3">
-                    <Link href="/register">
-                      <Button variant="outline" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                        Sign Up
-                      </Button>
-                    </Link>
-                    <Link href="/login">
-                      <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                        Log In
-                      </Button>
-                    </Link>
+                    {!isAuthenticated ? (
+                      <>
+                        <Link href="/register">
+                          <Button variant="outline" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                            Sign Up
+                          </Button>
+                        </Link>
+                        <Link href="/login">
+                          <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                            Log In
+                          </Button>
+                        </Link>
+                      </>
+                    ) : (
+                      <Link href="/admin">
+                        <Button className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                          Go to Dashboard
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </SheetContent>
