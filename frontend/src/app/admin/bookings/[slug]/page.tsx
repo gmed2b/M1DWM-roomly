@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import env from "@/env";
+
 import { BookingCreate, BookingResponse } from "@/types/booking";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ export default function EditBookingPage() {
   useEffect(() => {
     if (!bookingId) return;
     (async () => {
-      const res = await fetch(`${env.API_URL}/api/bookings/${bookingId}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${bookingId}`);
       if (!res.ok) return setError("Erreur de chargement");
       const data: BookingResponse = await res.json();
       setForm({
@@ -55,7 +55,7 @@ export default function EditBookingPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${env.API_URL}/api/bookings/${bookingId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${bookingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

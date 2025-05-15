@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import env from "@/env";
+
 import { fetcher } from "@/lib/utils";
 import type { BookingResponse } from "@/types/booking";
 import type { Room } from "@/types/room";
@@ -18,8 +18,8 @@ import Link from "next/link";
 import useSWR from "swr";
 
 export default function AdminDashboard() {
-  const { data: rooms, isLoading: isLoadingRooms } = useSWR<Room[]>(`${env.API_URL}/api/rooms`, fetcher);
-  const { data: bookings, isLoading: isLoadingBookings } = useSWR<BookingResponse[]>(`${env.API_URL}/api/bookings`, fetcher);
+  const { data: rooms, isLoading: isLoadingRooms } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
+  const { data: bookings, isLoading: isLoadingBookings } = useSWR<BookingResponse[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, fetcher);
 
   // Stats dynamiques
   const stats = [
@@ -140,10 +140,10 @@ export default function AdminDashboard() {
                         <td className="py-3">
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${booking.status === "Confirmed"
-                                ? "bg-green-100 text-green-700"
-                                : booking.status === "Pending"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-red-100 text-red-700"
+                              ? "bg-green-100 text-green-700"
+                              : booking.status === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
                               }`}
                           >
                             {booking.status}
@@ -194,10 +194,10 @@ export default function AdminDashboard() {
                         <td className="py-3">
                           <span
                             className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${room.status === "Available"
-                                ? "bg-green-100 text-green-700"
-                                : room.status === "Occupied"
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "bg-red-100 text-red-700"
+                              ? "bg-green-100 text-green-700"
+                              : room.status === "Occupied"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-red-100 text-red-700"
                               }`}
                           >
                             {room.status}

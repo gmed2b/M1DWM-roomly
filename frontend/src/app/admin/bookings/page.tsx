@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import env from "@/env";
+
 import { fetcher } from "@/lib/utils";
 import type { BookingResponse, BookingStatus } from "@/types/booking";
 import {
@@ -24,11 +24,11 @@ import useSWR from "swr";
 export default function BookingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<BookingStatus | "all">("all");
-  const { data: bookings, isLoading, error, mutate } = useSWR<BookingResponse[]>(`${env.API_URL}/api/bookings`, fetcher);
+  const { data: bookings, isLoading, error, mutate } = useSWR<BookingResponse[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, fetcher);
 
   // Suppression d'une réservation
   const handleDelete = async (id: string) => {
-    await fetch(`${env.API_URL}/api/bookings/${id}`, { method: "DELETE" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${id}`, { method: "DELETE" });
     mutate();
   };
 
@@ -134,10 +134,10 @@ export default function BookingsPage() {
                     <td className="py-3 px-2">{booking.attendees}</td>
                     <td className="py-3 px-2">
                       <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${booking.status === "confirmed"
-                          ? "bg-green-100 text-green-700"
-                          : booking.status === "pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
+                        ? "bg-green-100 text-green-700"
+                        : booking.status === "pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
                         }`}>
                         {booking.status}
                       </span>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import env from "@/env";
+
 import { fetcher } from "@/lib/utils";
 import type { Room } from "@/types/room";
 import {
@@ -23,11 +23,11 @@ import useSWR from "swr";
 export default function RoomsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const { data: rooms, isLoading, error, mutate } = useSWR<Room[]>(`${env.API_URL}/api/rooms`, fetcher);
+  const { data: rooms, isLoading, error, mutate } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
 
   // Suppression d'une room
   const handleDelete = async (id: string) => {
-    await fetch(`${env.API_URL}/api/rooms/${id}`, { method: "DELETE" });
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms/${id}`, { method: "DELETE" });
     mutate();
   };
 

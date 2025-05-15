@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import env from "@/env";
+
 import { fetcher } from "@/lib/utils";
 import { Room } from "@/types/room";
 import { useState } from "react";
@@ -20,6 +20,7 @@ interface FilterState {
   capacity: number;
   priceRange: [number, number];
   equipment: string[];
+  search: string; // Ajout du champ de recherche
 }
 
 const equipmentOptions = [
@@ -38,6 +39,7 @@ export default function SearchPage() {
     capacity: 10,
     priceRange: [0, 500],
     equipment: [],
+    search: "", // Initialisation du champ de recherche
   });
 
   const toggleEquipment = (id: string) => {
@@ -49,10 +51,20 @@ export default function SearchPage() {
     });
   };
 
-  const { data: rooms, isLoading, error } = useSWR<Room[]>(`${env.API_URL}/api/rooms`, fetcher);
+  const { data: rooms, isLoading, error } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
 
   // Filtrage dynamique côté client
   const filteredRooms = (rooms || []).filter((room) => {
+    // Recherche par nom ou description
+    if (filters.search.trim() !== "") {
+      const searchLower = filters.search.toLowerCase();
+      if (
+        !room.name.toLowerCase().includes(searchLower) &&
+        !room.description.toLowerCase().includes(searchLower)
+      ) {
+        return false;
+      }
+    }
     // Type
     if (filters.type !== "all") {
       if (filters.type === "small" && room.type !== "Petite") return false;
@@ -82,6 +94,17 @@ export default function SearchPage() {
     <div className="container mx-auto px-4 py-8 flex gap-8">
       <aside className="w-1/4 space-y-6">
         <h2 className="text-xl font-semibold">Filters</h2>
+        {/* Champ de recherche */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Search by name or description</h3>
+          <input
+            type="text"
+            className="w-full border rounded px-2 py-1 text-sm"
+            placeholder="Search..."
+            value={filters.search}
+            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+          />
+        </div>
         {/* Room Type */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Room Type</h3>
@@ -163,9 +186,9 @@ export default function SearchPage() {
             ))}
           </div>
         </div>
-        <Button className="w-full mt-4" type="button" onClick={() => { }}>
+        {/* <Button className="w-full mt-4" type="button" onClick={() => { }}>
           Apply Filters
-        </Button>
+        </Button> */}
       </aside>
       <main className="w-3/4">
         <h1 className="text-2xl font-bold mb-4">Search Results</h1>

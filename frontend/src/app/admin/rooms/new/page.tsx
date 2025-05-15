@@ -246,7 +246,7 @@ export default function NewRoomPage() {
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import { Input } from "@/components/ui/input";
 // import { Label } from "@/components/ui/label";
-// import env from "@/env";
+// 
 // import { Room } from "@/types/room";
 // import { useRouter } from "next/navigation";
 // import { useState } from "react";
@@ -298,7 +298,7 @@ export default function NewRoomPage() {
 //     setLoading(true);
 //     setError(null);
 //     try {
-//       const res = await fetch(`${env.API_URL}/api/rooms`, {
+//       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify(form),

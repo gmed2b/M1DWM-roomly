@@ -15,7 +15,7 @@ interface RoomCardProps {
 export function RoomCard({ room }: RoomCardProps) {
   const router = useRouter();
 
-  const featuredImage = room.images.find((img) => img.featured) || room.images[0];
+  const featuredImage = room.images.find((img) => img.featured) || room.images[0] || { src: "/placeholder.png", alt: "Placeholder" };
 
   return (
     <Link href={`/rooms/${room.slug}`} className="block">

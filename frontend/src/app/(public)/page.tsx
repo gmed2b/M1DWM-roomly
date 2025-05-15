@@ -5,11 +5,11 @@ import { RoomCard } from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import env from '@/env';
 import { fetcher } from "@/lib/utils";
 import type { Room } from "@/types/room";
 import { LucideArrowRight, LucideSearch } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from 'swr';
@@ -19,7 +19,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Chargement des rooms depuis l'API
-  const { data: rooms, isLoading, error } = useSWR<Room[]>(`${env.API_URL}/api/rooms`, fetcher);
+  const { data: rooms, isLoading, error } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -91,9 +91,11 @@ export default function HomePage() {
             <section>
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Popular Spaces</h2>
-                <Button variant="link" className="flex items-center">
-                  View all <LucideArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href={"/search?popular=true"}>
+                  <Button variant="link" className="flex items-center">
+                    View all <LucideArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading
@@ -102,7 +104,7 @@ export default function HomePage() {
                   ))
                   : error
                     ? <div className="col-span-3 text-center text-red-500">Erreur de chargement des salles</div>
-                    : popularRooms.map((room) => <RoomCard key={room.id} room={room} />)
+                    : popularRooms.slice(0, 3).map((room) => <RoomCard key={room.id} room={room} />)
                 }
               </div>
             </section>
