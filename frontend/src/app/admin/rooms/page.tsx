@@ -8,13 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { fetcher } from "@/lib/utils";
 import type { Room } from "@/types/room";
 import {
-  LucideBuilding,
   LucideDownload,
   LucideEdit,
   LucideFilter,
   LucideListPlus,
   LucideSearch,
-  LucideTrash,
+  LucideTrash
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -23,7 +22,7 @@ import useSWR from "swr";
 export default function RoomsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const { data: rooms, isLoading, error, mutate } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
+  const { data: rooms, mutate } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
 
   // Suppression d'une room
   const handleDelete = async (id: string) => {

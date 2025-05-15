@@ -9,11 +9,34 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_NAME: roomly-frontend
-  REGION: europe-west1  # Change this to your preferred region
+  REGION: europe-west1 
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Node.js Setup
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Dependencies
+      run: |
+        cd frontend
+        npm install
+
+    - name: Run Linter
+      run: |
+        cd frontend
+        npm run lint
+
   build:
     name: Build
+    needs: lint
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'

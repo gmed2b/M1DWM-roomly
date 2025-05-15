@@ -18,8 +18,8 @@ import Link from "next/link";
 import useSWR from "swr";
 
 export default function AdminDashboard() {
-  const { data: rooms, isLoading: isLoadingRooms } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
-  const { data: bookings, isLoading: isLoadingBookings } = useSWR<BookingResponse[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, fetcher);
+  const { data: rooms } = useSWR<Room[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, fetcher);
+  const { data: bookings } = useSWR<BookingResponse[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, fetcher);
 
   // Stats dynamiques
   const stats = [

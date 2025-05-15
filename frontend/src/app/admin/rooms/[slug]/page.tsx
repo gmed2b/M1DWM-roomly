@@ -75,8 +75,10 @@ export default function EditRoomPage() {
       });
       if (!res.ok) throw new Error("Erreur lors de la modification");
       router.push("/admin/rooms");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }

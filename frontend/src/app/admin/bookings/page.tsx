@@ -8,14 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { fetcher } from "@/lib/utils";
 import type { BookingResponse, BookingStatus } from "@/types/booking";
 import {
-  LucideCalendar,
-  LucideClock,
   LucideDownload,
   LucideEdit,
   LucideFilter,
   LucideListPlus,
   LucideSearch,
-  LucideTrash,
+  LucideTrash
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -24,7 +22,7 @@ import useSWR from "swr";
 export default function BookingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<BookingStatus | "all">("all");
-  const { data: bookings, isLoading, error, mutate } = useSWR<BookingResponse[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, fetcher);
+  const { data: bookings, mutate } = useSWR<BookingResponse[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, fetcher);
 
   // Suppression d'une réservation
   const handleDelete = async (id: string) => {
