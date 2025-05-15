@@ -71,3 +71,21 @@ jobs:
         region: ${{ env.REGION }}
         image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/react-app/react-app-dev:${{ github.sha }}
         flags: '--platform managed --allow-unauthenticated --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+
+    - name: Health Check
+      run: |
+        # Get the service URL
+        SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format 'value(status.url)')
+        
+        # Wait for the service to be ready (max 5 minutes)
+        for i in {1..30}; do
+          if curl -s -f "$SERVICE_URL" > /dev/null; then
+            echo "Health check passed! Frontend is accessible."
+            exit 0
+          fi
+          echo "Waiting for frontend to be ready... ($i/30)"
+          sleep 10
+        done
+        
+        echo "Health check failed after 5 minutes"
+        exit 1
