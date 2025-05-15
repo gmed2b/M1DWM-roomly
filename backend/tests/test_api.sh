@@ -8,7 +8,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # URL de base de l'API
-BASE_URL="http://127.0.0.1:5000/api"
+BASE_URL="http://localhost:5000/api"
 
 # Générer un timestamp pour les identifiants uniques
 TIMESTAMP=$(date +%s)

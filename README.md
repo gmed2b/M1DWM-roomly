@@ -63,8 +63,8 @@ cd roomly
 docker-compose up --build
 ```
 
-- Frontend : [http://127.0.0.1:3000](http://127.0.0.1:3000)
-- Backend : [http://127.0.0.1:5000/docs](http://127.0.0.1:5000/docs) (Flask Swagger)
+- Frontend : [http://localhost:3000](http://localhost:3000)
+- Backend : [http://localhost:5000/docs](http://localhost:5000/docs) (Flask Swagger)
 
 ---
 

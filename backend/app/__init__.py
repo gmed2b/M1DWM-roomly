@@ -35,6 +35,7 @@ def create_app():
             r"/api/*": {"origins": allowed_origins},
             r"/metrics": {"origins": allowed_origins},
         },
+        origins=allowed_origins,
         supports_credentials=True,
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -76,7 +77,7 @@ def create_app():
                 {
                     "message": "Hello from Local Development!",
                     "environment": "development",
-                    "url": "http://127.0.0.1:8080",
+                    "url": "http://localhost:8080",
                 }
             )
 
