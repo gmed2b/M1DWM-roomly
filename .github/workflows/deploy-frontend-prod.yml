@@ -64,7 +64,7 @@ jobs:
       run: |
         cd frontend
         IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/react-app/react-app-prod:${{ github.sha }}"
-        docker build -t $IMAGE_NAME .
+        docker build --build-arg NEXT_PUBLIC_API_URL=https://api.roomly.gelk.fr/ -t $IMAGE_NAME .
         docker push $IMAGE_NAME
 
   deploy:
@@ -92,8 +92,6 @@ jobs:
         region: ${{ env.REGION }}
         image: europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/react-app/react-app-dev:${{ github.sha }}
         flags: '--platform managed --allow-unauthenticated --service-account github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
-        env_vars: |
-          NEXT_PUBLIC_API_URL=https://api.roomly.gelk.fr/
 
   health-check:
     name: Health Check

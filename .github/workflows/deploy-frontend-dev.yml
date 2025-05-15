@@ -65,7 +65,7 @@ jobs:
       run: |
         cd frontend
         IMAGE_NAME="europe-west1-docker.pkg.dev/${{ env.PROJECT_ID }}/react-app/react-app-dev:${{ github.sha }}"
-        docker build -t $IMAGE_NAME .
+        docker build --build-arg NEXT_PUBLIC_API_URL=https://api.dev.roomly.gelk.fr/ -t $IMAGE_NAME .
         docker push $IMAGE_NAME
 
   deploy:
