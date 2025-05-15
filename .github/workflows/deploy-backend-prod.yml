@@ -145,7 +145,6 @@ jobs:
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           DATABASE_URL=${{ secrets.DATABASE_URL }}
           GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}
-          ENABLE_CLOUD_MONITORING=true
 
     - name: Health Check
       run: |
@@ -154,7 +153,7 @@ jobs:
         
         # Wait for the service to be ready (max 5 minutes)
         for i in {1..30}; do
-          if curl -s -f "$SERVICE_URL/metrics" > /dev/null; then
+          if curl -s -f "$SERVICE_URL/health" > /dev/null; then
             echo "Health check passed! Service is running."
             exit 0
           fi
