@@ -1,10 +1,9 @@
-name: Deploy Frontend to Cloud Run
+name: Deploy Frontend to Cloud Run (Prod)
 
 on:
   push:
     branches:
       - main
-
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -68,7 +67,6 @@ jobs:
         docker build -t $IMAGE_NAME .
         docker push $IMAGE_NAME
 
-
   deploy:
     name: Deploy
     needs: build
@@ -97,6 +95,20 @@ jobs:
         env_vars: |
           NEXT_PUBLIC_API_URL=https://api.roomly.gelk.fr/
 
+  health-check:
+    name: Health Check
+    needs: deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
     - name: Health Check
       run: |
         # Get the service URL
@@ -104,10 +116,15 @@ jobs:
         
         # Wait for the service to be ready (max 5 minutes)
         for i in {1..30}; do
-          if curl -s -f "$SERVICE_URL" > /dev/null; then
+          echo "Attempt $i: Checking service health..."
+          RESPONSE=$(curl -s -w "\nStatus Code: %{http_code}\n" -f "$SERVICE_URL" || echo "Failed to connect")
+          echo "Response: $RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q "Status Code: 200"; then
             echo "Health check passed! Frontend is accessible."
             exit 0
           fi
+          
           echo "Waiting for frontend to be ready... ($i/30)"
           sleep 10
         done
