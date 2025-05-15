@@ -145,3 +145,21 @@ jobs:
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           DATABASE_URL=${{ secrets.DATABASE_URL }}
           GOOGLE_CLOUD_PROJECT=${{ env.PROJECT_ID }}
+
+    - name: Health Check
+      run: |
+        # Get the service URL
+        SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format 'value(status.url)')
+        
+        # Wait for the service to be ready (max 5 minutes)
+        for i in {1..30}; do
+          if curl -s -f "$SERVICE_URL/health" > /dev/null; then
+            echo "Health check passed! Service is running."
+            exit 0
+          fi
+          echo "Waiting for service to be ready... ($i/30)"
+          sleep 10
+        done
+        
+        echo "Health check failed after 5 minutes"
+        exit 1
