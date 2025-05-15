@@ -75,7 +75,7 @@ jobs:
     - name: Health Check
       run: |
         # Get the service URL
-        SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format 'value(status.url)')
+        SERVICE_URL=https://roomly.gelk.fr/
         
         # Wait for the service to be ready (max 5 minutes)
         for i in {1..30}; do
