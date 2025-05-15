@@ -3,13 +3,13 @@ name: Deploy Frontend to Cloud Run
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main 
 
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_NAME: roomly-frontend
-  REGION: europe-west1  # Change this to your preferred region
+  REGION: europe-west1 
 
 jobs:
   build:
