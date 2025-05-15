@@ -59,7 +59,7 @@ def create_app():
 
     @app.route("/", methods=["GET"])
     def index():
-        return "Welcome to the Roomly API!"
+        return "Welcome to the BEST Roomly API!"
 
     @app.route("/api/hello", methods=["GET"])
     def hello():
