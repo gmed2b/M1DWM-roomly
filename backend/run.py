@@ -10,8 +10,7 @@ load_dotenv()
 app = create_app()
 
 # Setup monitoring in production
-if os.getenv("FLASK_ENV") == "production":
-    setup_monitoring(app)
+setup_monitoring(app)
 
 # This file is specifically for production use with Gunicorn
 # The app object will be used by Gunicorn to serve the application 
