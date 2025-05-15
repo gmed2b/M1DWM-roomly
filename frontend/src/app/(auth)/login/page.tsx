@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { setAuthToken, setUser } from "@/lib/auth";
+import { User } from "@/types/user";
 import { LucideBuilding, LucideCheck, LucideEye, LucideEyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -41,12 +43,23 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Pour le moment, c'est juste une simulation de connexion
-      // Dans un environnement réel, vous appelleriez votre API ici
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Rediriger vers la page d'accueil après la connexion
-      router.push("/");
+      // Call backend API for login
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Erreur lors de la connexion");
+        setIsLoading(false);
+        return;
+      }
+      // Save token and user to localStorage
+      setAuthToken(data.token);
+      setUser(data.user as User);
+      // Redirect to dashboard
+      router.push("/admin");
     } catch (err) {
       setError("Une erreur est survenue lors de la connexion");
       console.error(err);
