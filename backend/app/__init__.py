@@ -61,7 +61,7 @@ def create_app():
     def index():
         return "Welcome to the BEST Roomly API!"
 
-    @app.route("/api/hello-world", methods=["GET"])
+    @app.route("/api/hello", methods=["GET"])
     def hello():
         is_production = os.environ.get("FLASK_ENV") == "production"
         if is_production:
